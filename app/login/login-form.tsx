@@ -44,10 +44,10 @@ const LoginForm = () => {
         {/* Text */}
         <div>
           <h1 className="text-4xl font-bold">Login</h1>
-          <p className="mt-2 text-neutral-600">
+          <p className="mt-2 text-neutral-600 dark:text-neutral-400">
             Welcome to the{" "}
-            <span className="font-semibold text-neutral-800">
-              Supabase & Next.js 13 Auth Starter.
+            <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+              makr Assistant.
             </span>{" "}
             Please login your account by email or the Github account.
           </p>

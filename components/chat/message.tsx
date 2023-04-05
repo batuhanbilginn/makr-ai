@@ -1,6 +1,7 @@
-import { MessageI } from "@/types/collections";
+import { MessageT } from "@/types/collections";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 
+import { useAuth } from "@/lib/supabase/supabase-auth-provider";
 import "highlight.js/styles/github-dark.css";
 import { Clipboard } from "lucide-react";
 import { useRef } from "react";
@@ -8,9 +9,10 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import rehypeHighlight from "rehype-highlight";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
-const Message = ({ message }: { message: MessageI }) => {
+const Message = ({ message }: { message: MessageT }) => {
   const isAssistant = message.role === "assistant";
   const codeRef = useRef<HTMLElement>(null);
+  const { user } = useAuth();
   return (
     <div
       className={
@@ -24,7 +26,11 @@ const Message = ({ message }: { message: MessageI }) => {
         {/* Avatar */}
         <Avatar className="outline outline-2 outline-offset-2 dark:outline-neutral-700 outline-neutral-200">
           <AvatarImage
-            src={!isAssistant ? "/user-avatar.png" : "/makr.-avatar.png"}
+            src={
+              !isAssistant
+                ? user?.avatar_url ?? "/user-avatar.png"
+                : "/makr.-avatar.png"
+            }
           />
           <AvatarFallback>{!isAssistant ? "YOU" : "AI"}</AvatarFallback>
         </Avatar>
@@ -73,7 +79,7 @@ const Message = ({ message }: { message: MessageI }) => {
             rehypePlugins={[rehypeHighlight]}
             /* remarkPlugins={[remarkGfm]} */
           >
-            {message.content}
+            {message.content ?? ""}
           </ReactMarkdown>
         </div>
       </div>

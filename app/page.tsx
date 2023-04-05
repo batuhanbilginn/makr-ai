@@ -1,13 +1,5 @@
-import Chatbox from "@/components/chat/chatbox";
-import Sidebar from "@/components/navigation/sidebar";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div className="flex w-full h-screen max-h-screen overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar />
-      {/* Chatbox */}
-      <Chatbox />
-    </div>
-  );
+  return redirect("/chat");
 }

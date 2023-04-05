@@ -1,13 +1,13 @@
 "use client";
 
-import { Profile } from "@/types/collections";
+import { ProfileT } from "@/types/collections";
 import { Session } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect } from "react";
 import useSWR from "swr";
 import { useSupabase } from "./supabase-provider";
 interface ContextI {
-  user: Profile | null | undefined;
+  user: ProfileT | null | undefined;
   error: any;
   isLoading: boolean;
   mutate: any;
@@ -60,7 +60,8 @@ export default function SupabaseAuthProvider({
   // Sign Out
   const signOut = async () => {
     await supabase.auth.signOut();
-    router.push("/login");
+    router.refresh();
+    console.log("Signed Out! (from supabase-auth-provider.tsx)");
   };
 
   // Sign-In with Github

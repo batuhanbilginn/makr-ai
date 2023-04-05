@@ -1,9 +1,9 @@
 import Image from "next/image";
 
-const Logo = () => {
+const Logo = ({ className }: { className?: string }) => {
   return (
     <Image
-      className="max-w-[70px]"
+      className={className}
       width={296}
       height={77}
       src="/makr-logo.svg"

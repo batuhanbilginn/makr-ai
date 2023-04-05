@@ -6,4 +6,6 @@ export interface MessageI extends ChatGPTMessage {
   createdAt: Date;
 }
 
-export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+export type ProfileT = Database["public"]["Tables"]["profiles"]["Row"];
+export type ChatT = Database["public"]["Tables"]["chats"]["Row"];
+export type MessageT = Database["public"]["Tables"]["messages"]["Row"];

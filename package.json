@@ -11,11 +11,14 @@
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.0.2",
+    "@radix-ui/react-dropdown-menu": "^2.0.4",
     "@radix-ui/react-label": "^2.0.1",
     "@radix-ui/react-scroll-area": "^1.0.3",
     "@radix-ui/react-separator": "^1.0.2",
+    "@radix-ui/react-tooltip": "^1.0.5",
     "@supabase/auth-helpers-nextjs": "^0.5.6",
     "@supabase/supabase-js": "^2.14.0",
+    "@types/luxon": "^3.2.2",
     "@types/node": "18.15.11",
     "@types/react": "18.0.31",
     "@types/react-copy-to-clipboard": "^5.0.4",
@@ -28,11 +31,14 @@
     "eslint": "8.37.0",
     "eslint-config-next": "13.2.4",
     "eventsource-parser": "^1.0.0",
+    "framer-motion": "^10.10.0",
     "google-it": "^1.6.4",
     "highlight.js": "^11.7.0",
     "jotai": "^2.0.3",
+    "jotai-utils": "^0.0.0",
     "lucide": "^0.129.0",
     "lucide-react": "^0.129.0",
+    "luxon": "^3.3.0",
     "next": "13.2.4",
     "next-themes": "^0.2.1",
     "openai": "^3.2.1",
@@ -49,7 +55,10 @@
     "tailwindcss": "^3.3.1",
     "tailwindcss-animate": "^1.0.5",
     "typescript": "5.0.3",
+    "uuid": "^9.0.0",
     "uuidv4": "^6.2.13"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "encoding": "^0.1.13"
+  }
 }

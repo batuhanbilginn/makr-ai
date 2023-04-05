@@ -12,8 +12,6 @@ export const config = {
 export async function POST(req: Request): Promise<Response> {
   const { messages, model } = await req.json();
 
-  console.log("messages", messages);
-
   if (!messages) {
     return new Response("No messages!", { status: 400 });
   }
@@ -29,6 +27,8 @@ export async function POST(req: Request): Promise<Response> {
     stream: true,
     n: 1,
   };
+
+  console.log(messages);
 
   const stream = await OpenAIStream(payload);
   return new Response(stream);

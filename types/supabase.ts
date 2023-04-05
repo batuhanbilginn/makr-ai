@@ -34,6 +34,49 @@ export interface Database {
   }
   public: {
     Tables: {
+      chats: {
+        Row: {
+          created_at: string | null
+          id: string
+          owner: string | null
+          title: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          owner?: string | null
+          title?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          owner?: string | null
+          title?: string | null
+        }
+      }
+      messages: {
+        Row: {
+          chat: string | null
+          content: string | null
+          created_at: string | null
+          id: string
+          role: string | null
+        }
+        Insert: {
+          chat?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          role?: string | null
+        }
+        Update: {
+          chat?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          role?: string | null
+        }
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -193,7 +236,7 @@ export interface Database {
         Args: {
           name: string
         }
-        Returns: string[]
+        Returns: unknown
       }
       get_size_by_bucket: {
         Args: Record<PropertyKey, never>

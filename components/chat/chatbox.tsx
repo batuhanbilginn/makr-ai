@@ -1,20 +1,23 @@
 "use client";
-import { chatAtom, chatboxRefAtom } from "@/atoms/chat";
-import { useAtomValue } from "jotai";
+import useChat2 from "@/hooks/useChat2";
+import { MessageT } from "@/types/collections";
 import ChatInput from "./chat-input";
-import Message from "./message";
+import Messages from "./messages";
 
-const Chatbox = () => {
-  const messages = useAtomValue(chatAtom);
-  const ref = useAtomValue(chatboxRefAtom);
+const Chatbox = ({
+  type,
+  chatID,
+  initialMessages,
+}: {
+  type: "NEW" | "EXISTING";
+  chatID?: string;
+  initialMessages?: MessageT[];
+}) => {
+  useChat2({ chatID: chatID ?? "", initialMessages: initialMessages ?? [] });
   return (
     <div className="relative w-full h-screen bg-neutral-900">
-      <div ref={ref} className="max-h-screen overflow-scroll">
-        {messages.map((message) => (
-          <Message key={message.id} message={message} />
-        ))}
-      </div>
-      <ChatInput />
+      {type === "EXISTING" ? <Messages /> : <div>Start New Chat</div>}
+      <ChatInput type={type} />
     </div>
   );
 };
