@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <div className="w-full">
       {/* Chatbox */}
-      <Chatbox type="NEW" />
+      <Chatbox />
     </div>
   );
 }

@@ -1,17 +1,69 @@
-import { MessageT } from "@/types/collections";
+import { ChatWithMessageCountAndSettings, MessageT } from "@/types/collections";
+import {
+  ChatGPTMessage,
+  OpenAISettings,
+  OpenAIStreamPayload,
+} from "@/types/openai";
 import { atom } from "jotai";
 import { createRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 
-export const systemPropmtAtom = atom<string>(
-  `You are makrGPT, a large language model trained by OpenAI. Answer as concisely as possible and ALWAYS answer in MARKDOWN. Current date: ${new Date().toLocaleDateString()}`
-);
-export const inputAtom = atom<string>("");
-export const chatboxRefAtom = atom(createRef<HTMLDivElement>());
+export const defaultSystemPropmt = `You are makrGPT, a large language model trained by OpenAI.`;
+
+// To control OpenAI Settings
+export const openAISettingsAtom = atom<OpenAISettings>({
+  model: "gpt-3.5-turbo",
+  system_prompt: defaultSystemPropmt,
+  advanced_settings: {
+    temperature: 0.7,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+    max_tokens: 1000,
+    stream: true,
+    n: 1,
+  },
+});
+
+// To combine all settings and messages in a state for sending new message (Read Only)
+const openAIPayload = atom<OpenAIStreamPayload>((get) => {
+  return {
+    model: get(openAISettingsAtom).model,
+    messages: [
+      {
+        content:
+          get(currentChatAtom)?.system_prompt!! +
+          `Answer as concisely as possible and ALWAYS answer in MARKDOWN. Current date: ${new Date()}`,
+        role: "system",
+      },
+      ...get(messagesAtom).map(
+        (m) =>
+          ({
+            content: m.content as string,
+            role: m.role ?? "user",
+          } as ChatGPTMessage)
+      ),
+    ],
+    ...get(currentChatAtom)?.advanced_settings!!,
+  };
+});
+
 const handlingAtom = atom<boolean>(false);
-const abortControllerAtom = atom<AbortController>(new AbortController());
+export const chatboxRefAtom = atom(createRef<HTMLDivElement>());
+export const inputAtom = atom<string>("");
+
+// Where we keep current chat ID - We use this to keep track of current chat
 export const chatIDAtom = atom<string>("");
-export const chatAtom = atom<MessageT[]>([]);
+// Where we keep current chat (Read Only - We keep this updated based on chatID, so we don't need to update it manually)
+export const currentChatAtom = atom<null | ChatWithMessageCountAndSettings>(
+  (get) => get(chatsAtom).find((chat) => chat.id === get(chatIDAtom)) ?? null
+);
+export const chatsAtom = atom<ChatWithMessageCountAndSettings[]>([]);
+// Where we keep all the messages
+export const messagesAtom = atom<MessageT[]>([]);
+
+// Abort Controller for OpenAI Stream
+const abortControllerAtom = atom<AbortController>(new AbortController());
 export const cancelHandlerAtom = atom(
   (get) => get(handlingAtom),
   (get, set) => {
@@ -22,6 +74,7 @@ export const cancelHandlerAtom = atom(
   }
 );
 
+// Add Message Handler
 export const addMessageAtom = atom(
   (get) => get(handlingAtom),
   async (get, set, action: "generate" | "regenerate" = "generate") => {
@@ -32,27 +85,30 @@ export const addMessageAtom = atom(
     if (isHandlig || (inputValue.length < 2 && action !== "regenerate")) return;
 
     // Build User's Message Object in Function Scope - We need to use it in multiple places
-    const userMessage = {
+    const userMessage: MessageT = {
       content: inputValue,
       role: "user",
-      chat: chatID,
+      chat: chatID!!,
+      id: uuidv4(),
+      created_at: String(new Date()),
+      owner: "",
     };
 
     // Add to Supabase Handler
-    const addMessagetoSupabase = async (
-      message: Omit<MessageT, "id" | "created_at">
-    ) => {
+    const addMessagetoSupabase = async (messages: MessageT[]) => {
       try {
         // Add message to the Supabase
-        await fetch("/api/supabase/message", {
+        const response = await fetch("/api/supabase/message", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            message: { ...message, chat: chatID },
+            messages,
           }),
         });
+        if (!response.ok) throw new Error("Failed to add message to Supabase");
+        return await response.json();
       } catch (error) {
         console.log(error);
       }
@@ -63,15 +119,8 @@ export const addMessageAtom = atom(
 
     if (action === "generate") {
       /* 1) Add User Message to the State */
-      set(chatAtom, (prev) => {
-        return [
-          ...prev,
-          {
-            ...userMessage,
-            id: uuidv4(),
-            created_at: String(new Date()),
-          },
-        ];
+      set(messagesAtom, (prev) => {
+        return [...prev, userMessage];
       });
 
       // Clear Input
@@ -79,19 +128,30 @@ export const addMessageAtom = atom(
     }
 
     /* 2) Send to the API */
+    // Set initial message
+    const initialID = uuidv4();
+    set(messagesAtom, (prev) => {
+      return [
+        ...prev,
+        {
+          id: initialID,
+          content: "",
+          role: "assistant",
+          created_at: String(new Date()),
+          chat: chatID!!,
+          owner: "",
+        },
+      ];
+    });
+
+    // Stream Handler (This code is from Hassan's example)
     const response = await fetch("/api/openai/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        messages: [
-          { content: get(systemPropmtAtom), role: "system" },
-          ...get(chatAtom).map((m) => ({
-            content: m.content,
-            role: m.role,
-          })),
-        ],
+        payload: get(openAIPayload),
       }),
       signal: get(abortControllerAtom).signal,
     });
@@ -112,28 +172,16 @@ export const addMessageAtom = atom(
     const decoder = new TextDecoder();
     let done = false;
 
-    // Set initial message
-    const initialID = uuidv4();
-    set(chatAtom, (prev) => {
-      return [
-        ...prev,
-        {
-          id: initialID,
-          content: "",
-          role: "assistant",
-          created_at: String(new Date()),
-          chat: chatID,
-        },
-      ];
-    });
-
     while (!done) {
       const { value, done: doneReading } = await reader.read();
       done = doneReading;
       const chunkValue = decoder.decode(value);
-      set(chatAtom, (prev) => {
+      set(messagesAtom, (prev) => {
         const responseMessage = prev.find((m) => m.id === initialID);
-        if (!responseMessage) throw new Error("No response message found");
+        if (!responseMessage) {
+          console.log("No response message", responseMessage);
+          return prev;
+        }
         return [
           ...prev.filter((m) => m.id !== initialID),
           {
@@ -153,51 +201,127 @@ export const addMessageAtom = atom(
 
     // Stop Handling
     set(handlingAtom, false);
-    // Add message to the Supabase
-    const finalAIMessage = get(chatAtom).find((m) => m.id === initialID);
-    if (finalAIMessage) {
-      await Promise.all([
-        action === "generate" ? addMessagetoSupabase(userMessage) : null,
-        addMessagetoSupabase({
-          role: finalAIMessage?.role,
-          content: finalAIMessage?.content,
-          chat: finalAIMessage?.chat,
-        }),
-      ]);
+    // Add messages to the Supabase
+    const finalAIMessage = get(messagesAtom).find(
+      (m) => m.id === initialID
+    ) as MessageT;
+    if (action === "generate") {
+      const instertedMessages = await addMessagetoSupabase(
+        finalAIMessage ? [userMessage, finalAIMessage] : [userMessage]
+      );
+      // Change the dummy IDs with the real ones
+      if (!instertedMessages) {
+        console.log("No inserted messages");
+        return;
+      }
+      for (const message of instertedMessages) {
+        if (message.role === "user") {
+          set(messagesAtom, (prev) => {
+            return prev.map((m) => {
+              if (m.id === userMessage.id) {
+                return {
+                  ...m,
+                  id: message.id,
+                };
+              }
+              return m;
+            });
+          });
+        } else {
+          set(messagesAtom, (prev) => {
+            return prev.map((m) => {
+              if (m.id === initialID) {
+                return {
+                  ...m,
+                  id: message.id,
+                };
+              }
+              return m;
+            });
+          });
+        }
+      }
     } else {
-      await addMessagetoSupabase(userMessage);
+      const instertedMessages = await addMessagetoSupabase([finalAIMessage!]);
+      // Change the dummy IDs with the real ones
+      if (!instertedMessages) {
+        console.log("No inserted messages found");
+        return;
+      }
+      set(messagesAtom, (prev) => {
+        return prev.map((m) => {
+          if (m.id === initialID) {
+            return {
+              ...m,
+              id: instertedMessages[0].id,
+            };
+          }
+          return m;
+        });
+      });
+    }
+
+    // If chat is new, update the chat title
+    const isChatNew = get(messagesAtom).length === 2;
+    if (isChatNew) {
+      const response = await fetch("/api/openai/chat-title", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: get(messagesAtom).map((message) => {
+            return {
+              content: message.content,
+              role: message.role,
+            };
+          }),
+          chatID: get(chatIDAtom),
+        }),
+      });
+      const { title } = await response.json();
+      set(chatsAtom, (prev) => {
+        return prev.map((c) => {
+          if (c.id === get(chatIDAtom)) {
+            return {
+              ...c,
+              title,
+            };
+          }
+          return c;
+        });
+      });
     }
   }
 );
 
+// Re-generate Handler
 export const regenerateHandlerAtom = atom(
   (get) => {
     // Is there any message from the assistant?
     const assistantMessage =
-      get(chatAtom).filter((m) => m.role === "assistant")?.length > 0;
+      get(messagesAtom).filter((m) => m.role === "assistant")?.length > 0;
     const isHandling = get(handlingAtom);
     return Boolean(assistantMessage && !isHandling);
   },
   async (get, set) => {
     // Remove last assistant message
-    const allMessages = [...get(chatAtom)];
+    const allMessages = [...get(messagesAtom)];
     const lastMessage = allMessages.pop();
     if (lastMessage?.role === "assistant") {
-      set(chatAtom, allMessages);
+      set(messagesAtom, allMessages);
       // Remove from Supabase
-      const deleteFromSupabase = fetch("/api/supabase/message", {
+      await fetch("/api/supabase/message", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          id: lastMessage.id,
+          message: lastMessage,
         }),
       });
 
-      const regenerateResponse = set(addMessageAtom, "regenerate");
-
-      await Promise.all([deleteFromSupabase, regenerateResponse]);
+      await set(addMessageAtom, "regenerate");
     }
   }
 );

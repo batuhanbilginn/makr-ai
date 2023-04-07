@@ -3,14 +3,9 @@ import { cva, VariantProps } from "class-variance-authority";
 import * as React from "react";
 
 const spinnerVariants = cva(
-  "text-secondaryWhite animate-spin dark:text-tertiaryWhite",
+  "animate-spin fill-neutral-800 text-neutral-200 dark:text-neutral-400",
   {
     variants: {
-      variant: {
-        default: "fill-primaryBlack",
-        red: "fill-primaryRed",
-        white: "fill-primaryWhite",
-      },
       size: {
         default: "w-6 h-6",
         sm: "w-4 h-4",
@@ -18,7 +13,6 @@ const spinnerVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "default",
       size: "default",
     },
   }
@@ -28,12 +22,12 @@ export interface SpinnerProps
   extends React.ButtonHTMLAttributes<HTMLElement>,
     VariantProps<typeof spinnerVariants> {}
 
-const Spinner = ({ variant, size }: SpinnerProps) => {
+const Spinner = ({ size }: SpinnerProps) => {
   return (
     <div role="status">
       <svg
         aria-hidden="true"
-        className={cn(spinnerVariants({ variant, size }))}
+        className={cn(spinnerVariants({ size }))}
         viewBox="0 0 100 101"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

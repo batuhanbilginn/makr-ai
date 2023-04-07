@@ -36,21 +36,30 @@ export interface Database {
     Tables: {
       chats: {
         Row: {
+          advanced_settings: Json | null
           created_at: string | null
           id: string
+          model: string | null
           owner: string | null
+          system_prompt: string | null
           title: string | null
         }
         Insert: {
+          advanced_settings?: Json | null
           created_at?: string | null
           id?: string
+          model?: string | null
           owner?: string | null
+          system_prompt?: string | null
           title?: string | null
         }
         Update: {
+          advanced_settings?: Json | null
           created_at?: string | null
           id?: string
+          model?: string | null
           owner?: string | null
+          system_prompt?: string | null
           title?: string | null
         }
       }
@@ -60,6 +69,7 @@ export interface Database {
           content: string | null
           created_at: string | null
           id: string
+          owner: string | null
           role: string | null
         }
         Insert: {
@@ -67,6 +77,7 @@ export interface Database {
           content?: string | null
           created_at?: string | null
           id?: string
+          owner?: string | null
           role?: string | null
         }
         Update: {
@@ -74,6 +85,7 @@ export interface Database {
           content?: string | null
           created_at?: string | null
           id?: string
+          owner?: string | null
           role?: string | null
         }
       }

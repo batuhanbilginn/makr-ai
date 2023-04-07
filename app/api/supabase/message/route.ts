@@ -1,10 +1,11 @@
 import { createClient } from "@/lib/supabase/supabase-server";
+import { NextResponse } from "next/server";
 
 // POST
 export async function POST(req: Request): Promise<Response> {
-  const { message } = await req.json();
+  const { messages } = await req.json();
   // If no message, return 400
-  if (!message) {
+  if (!messages) {
     return new Response("No message!", { status: 400 });
   }
 
@@ -20,23 +21,33 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   // Insert Message
-  const { error } = await supabase
+  const { data: messagesInserted, error } = await supabase
     .from("messages")
-    .insert({ ...message, owner: session?.user?.id });
+    .insert(
+      messages.map((message: any) => {
+        return {
+          chat: message.chat,
+          content: message.content,
+          role: message.role,
+          owner: session?.user?.id,
+        };
+      })
+    )
+    .select("id,role,content");
 
   if (error) {
     return new Response(error.message, { status: 400 });
   } else {
-    return new Response("Message added!", { status: 200 });
+    return NextResponse.json(messagesInserted);
   }
 }
 
 // DELETE
 export async function DELETE(req: Request): Promise<Response> {
-  const { id } = await req.json();
+  const { message } = await req.json();
 
   // If no ID, return 400
-  if (!id) {
+  if (!message) {
     return new Response("No ID!", { status: 400 });
   }
 
@@ -51,11 +62,10 @@ export async function DELETE(req: Request): Promise<Response> {
     return new Response("Not authorized!", { status: 401 });
   }
 
-  const { error } = await supabase
+  await supabase
     .from("messages")
     .delete()
-    .match({ id, owner: session?.user?.id });
-  console.log(error);
+    .match({ id: message.id, owner: session?.user?.id });
 
   return new Response("Message deleted!", { status: 200 });
 }

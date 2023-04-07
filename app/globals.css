@@ -12,15 +12,25 @@
   .markdown p {
     @apply mt-3 first:mt-0;
   }
-
   .markdown ol {
     @apply my-3 list-decimal;
   }
   .markdown li {
     @apply my-2;
   }
-
   .markdown ul {
     @apply my-3 list-disc;
+  }
+  .markdown h2 {
+    @apply mt-6 mb-2 text-2xl font-semibold;
+  }
+  .markdown h3 {
+    @apply mt-6 mb-2 text-xl font-semibold;
+  }
+  .markdown h4 {
+    @apply mt-6 mb-2 text-lg font-medium;
+  }
+  .markdown h5 {
+    @apply mt-6 mb-2 text-base font-medium;
   }
 }

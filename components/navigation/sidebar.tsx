@@ -1,17 +1,24 @@
+"use client";
+import { mobileMenuAtom } from "@/atoms/navigation";
+import { useAtomValue } from "jotai";
 import Logo from "../brand/logo";
 import Chats from "../chat/chats";
 import ProfileMenu from "./profile-menu";
 
 const Sidebar = () => {
+  const isMobileMenuOpen = useAtomValue(mobileMenuAtom);
   return (
-    <aside className="w-full max-w-[260px] h-screen px-4 py-8 shadow-md dark:border-neutral-800 border-neutral-200">
+    <aside
+      id="sidebar"
+      className={`fixed top-0 left-0 z-40 w-64 h-screen px-4 py-8 transition-transform -translate-x-full shadow-md md:translate-x-0 dark:border-neutral-800 border-neutral-200 bg-white dark:bg-neutral-950 dark:text-neutral-50 ${
+        isMobileMenuOpen ? "!translate-x-0" : ""
+      }`}
+    >
       <div className="flex flex-col justify-between h-full">
         <div>
-          {/* Logo */}
           <Logo className="max-w-[70px]" />
           <Chats />
         </div>
-        {/* Footer Menu */}
         <ProfileMenu />
       </div>
     </aside>
