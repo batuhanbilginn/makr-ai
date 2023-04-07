@@ -7,7 +7,7 @@ import { Button } from "../ui/button";
 const MobileMenuButton = () => {
   const showMobileMenu = useSetAtom(mobileMenuAtom);
   return (
-    <div className="w-full px-8 py-4 md:hidden">
+    <div className="sticky top-0 w-full px-4 py-4 sm:px-8 md:hidden">
       <Button
         title="Mobile Menu"
         className="-ml-4"

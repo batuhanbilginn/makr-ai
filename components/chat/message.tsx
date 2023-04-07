@@ -22,9 +22,9 @@ const Message = ({ message }: { message: MessageT }) => {
       }
     >
       {/* Container */}
-      <div className="flex w-full max-w-3xl gap-4 px-8 py-10 mx-auto">
+      <div className="flex w-full max-w-3xl gap-4 px-4 py-10 mx-auto sm:px-8">
         {/* Avatar */}
-        <Avatar className="outline outline-2 outline-offset-2 dark:outline-neutral-700 outline-neutral-400">
+        <Avatar className="ring-2 ring-offset-2 dark:ring-neutral-700 ring-neutral-400">
           <AvatarImage
             src={
               !isAssistant

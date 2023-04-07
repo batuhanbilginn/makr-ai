@@ -38,6 +38,14 @@ module.exports = {
           950: "#0a0a0a",
         },
       },
+      height: {
+        screen: "calc(var(--vh) * 100)",
+        screen60: "calc(var(--vh) * 60)",
+      },
+      maxHeight: {
+        screen: "calc(var(--vh) * 100)",
+        screen60: "calc(var(--vh) * 60)",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

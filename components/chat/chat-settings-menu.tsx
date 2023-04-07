@@ -68,7 +68,7 @@ const ChatSettingsMenu = () => {
               : "Custom"}
           </div>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="">
           <DialogHeader>
             <h2>Change settings</h2>
           </DialogHeader>

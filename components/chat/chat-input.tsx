@@ -59,7 +59,7 @@ const ChatInput = ({
   }, [handleKeyDown]);
 
   return (
-    <div className="sticky bottom-0 left-0 right-0 px-8 py-10 bg-gradient-to-b from-transparent dark:via-neutral-950/60 dark:to-neutral-950/90 via-neutral-50/60 to-neutral-50/90">
+    <div className="sticky bottom-0 left-0 right-0 px-4 py-10 sm:px-8 bg-gradient-to-b from-transparent dark:via-neutral-950/60 dark:to-neutral-950/90 via-neutral-50/60 to-neutral-50/90">
       {/* Container */}
       <div className="w-full max-w-5xl mx-auto">
         {/* Abort Controller */}

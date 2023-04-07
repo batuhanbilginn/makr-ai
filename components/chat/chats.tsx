@@ -11,7 +11,7 @@ const Chats = () => {
   const { chats, addChatHandler, isLoading } = useChats();
   const showMobileMenu = useSetAtom(mobileMenuAtom);
   return (
-    <div className="h-full mt-20 ">
+    <div className="h-full mt-8 sm:mt-20">
       {/* New Chat Button */}
       <Button
         onClick={() => {
@@ -25,12 +25,12 @@ const Chats = () => {
       </Button>
       {/* Chats */}
       {chats && chats?.length > 0 && (
-        <h3 className="mt-6 text-sm font-medium dark:text-neutral-400 text-neutral-600">
+        <h3 className="mt-4 text-sm font-medium sm:mt-6 dark:text-neutral-400 text-neutral-600">
           Chats <span className="text-xs">({chats?.length})</span>
         </h3>
       )}
       {chats && !isLoading ? (
-        <div className="flex flex-col gap-4 mt-2 h-full max-h-[60vh] overflow-y-auto">
+        <div className="flex flex-col gap-4 mt-2 overflow-y-auto max-h-screen60">
           {chats?.map((chat) => (
             <Chat key={chat.id} chat={chat} />
           ))}
