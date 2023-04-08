@@ -8,6 +8,8 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const pathname = req.nextUrl.pathname;
 
+  console.log({ req });
+
   const supabase = createMiddlewareSupabaseClient<Database>({ req, res });
 
   const {
