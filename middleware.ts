@@ -21,6 +21,7 @@ export async function middleware(req: NextRequest) {
   }
 
   if (session && (pathname === "/" || pathname === "/#")) {
+    console.log(pathname);
     const url = new URL(req.url);
     url.pathname = "/chat";
     return NextResponse.redirect(url);
