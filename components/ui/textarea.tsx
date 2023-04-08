@@ -17,7 +17,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       onChange?.(e);
 
       // Calculate number of rows
-      const textareaLineHeight = 20;
+      const textareaLineHeight = 24;
       const previousRows = e.target.rows;
       e.target.rows = defaultRow; // reset number of rows in textarea
       const currentRows = ~~(e.target.scrollHeight / textareaLineHeight);

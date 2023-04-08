@@ -4,7 +4,7 @@ import LoginForm from "./login-form";
 
 const LoginPage = () => {
   return (
-    <div className="grid w-full h-screen grid-cols-1 md:grid-cols-3">
+    <div className="grid w-full h-[100vh] grid-cols-1 md:grid-cols-3">
       <LoginForm />
       {/* Gradient */}
       <div className="relative hidden w-full overflow-hidden md:col-span-2 rounded-l-2xl md:block">

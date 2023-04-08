@@ -308,11 +308,12 @@ export const regenerateHandlerAtom = atom(
     // Remove last assistant message
     const allMessages = [...get(messagesAtom)];
     const lastMessage = allMessages.pop();
+
     if (lastMessage?.role === "assistant") {
       set(messagesAtom, allMessages);
       // Remove from Supabase
       await fetch("/api/supabase/message", {
-        method: "DELETE",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },

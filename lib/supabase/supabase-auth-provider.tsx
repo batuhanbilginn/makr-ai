@@ -13,7 +13,6 @@ interface ContextI {
   mutate: any;
   signOut: () => Promise<void>;
   signInWithGithub: () => Promise<void>;
-  signInWithEmail: (email: string, password: string) => Promise<string | null>;
 }
 const Context = createContext<ContextI>({
   user: null,
@@ -22,7 +21,6 @@ const Context = createContext<ContextI>({
   mutate: null,
   signOut: async () => {},
   signInWithGithub: async () => {},
-  signInWithEmail: async (email: string, password: string) => null,
 });
 
 export default function SupabaseAuthProvider({
@@ -60,27 +58,18 @@ export default function SupabaseAuthProvider({
   // Sign Out
   const signOut = async () => {
     await supabase.auth.signOut();
-    router.refresh();
+    router.push("/login");
     console.log("Signed Out! (from supabase-auth-provider.tsx)");
   };
 
   // Sign-In with Github
   const signInWithGithub = async () => {
-    await supabase.auth.signInWithOAuth({ provider: "github" });
-  };
-
-  // Sign-In with Email
-  const signInWithEmail = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    await supabase.auth.signInWithOAuth({
+      provider: "github",
+      options: {
+        redirectTo: "http://localhost:3000/chat",
+      },
     });
-
-    if (error) {
-      return error.message;
-    }
-
-    return null;
   };
 
   // Refresh the Page to Sync Server and Client
@@ -105,7 +94,6 @@ export default function SupabaseAuthProvider({
     mutate,
     signOut,
     signInWithGithub,
-    signInWithEmail,
   };
 
   return <Context.Provider value={exposed}>{children}</Context.Provider>;

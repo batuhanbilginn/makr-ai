@@ -42,8 +42,8 @@ export async function POST(req: Request): Promise<Response> {
   }
 }
 
-// DELETE
-export async function DELETE(req: Request): Promise<Response> {
+// DELETE (Currently there is bug with DELETE request - Next.js 13.3.0)
+export async function PATCH(req: Request): Promise<Response> {
   const { message } = await req.json();
 
   // If no ID, return 400

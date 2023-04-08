@@ -19,6 +19,7 @@ const Chatbox = ({
   const setCurrentChatID = useSetAtom(chatIDAtom);
   const [messages, setMessages] = useAtom(messagesAtom);
   const addMessageHandler = useSetAtom(addMessageAtom);
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const writableParams = useMemo(
@@ -36,7 +37,6 @@ const Chatbox = ({
   // Send First Message if it's a new chat
   useEffect(() => {
     if (isChatNew && chatID) {
-      console.log("Running Effect");
       addMessageHandler("generate").then(async () => {
         writableParams.delete("new");
         router.replace(`/chat/${chatID}`);
@@ -47,33 +47,14 @@ const Chatbox = ({
   const isExistingChat = ((initialMessages && initialMessages.length > 0) ||
     messages.length > 0)!!;
 
-  //gets screen size - to fix mobile viewport height problem
-  useEffect(() => {
-    // only execute all the code below in client side
-    if (typeof window !== "undefined") {
-      // Handler to call on window resize
-      const handleResize = () => {
-        let vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty("--vh", `${vh}px`);
-      };
-
-      // Add event listener
-      window.addEventListener("resize", handleResize);
-
-      // Call handler right away so state gets updated with initial window size
-      handleResize();
-
-      // Remove event listener on cleanup
-      return () => window.removeEventListener("resize", handleResize);
-    }
-  }, []);
-
   return (
-    <div className="relative w-full h-screen ml-0 transition-all md:ml-64 dark:bg-neutral-900 bg-neutral-50">
-      <MobileMenuButton />
-      {isExistingChat ? <Messages /> : <NewChat />}
-      <ChatInput chatID={chatID} isExistingChat={isExistingChat} />
-    </div>
+    <main className="relative flex flex-col items-stretch flex-1 w-full h-full ml-0 overflow-hidden transition-all transition-width md:ml-64 dark:bg-neutral-900 bg-neutral-50">
+      <div className="flex-1 overflow-hidden">
+        <MobileMenuButton />
+        {isExistingChat ? <Messages /> : <NewChat />}
+        <ChatInput chatID={chatID} isExistingChat={isExistingChat} />
+      </div>
+    </main>
   );
 };
 

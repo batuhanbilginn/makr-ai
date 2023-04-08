@@ -74,9 +74,9 @@ const ChatInput = ({
             </Button>
           </div>
         )}
-        {/* Regenerate Controller */}
+        {/* Regenerate Controller - Desktop */}
         {!isHandling && isRegenerateSeen && (
-          <div className="flex items-center justify-center py-2">
+          <div className="items-center justify-center hidden py-2 sm:flex">
             <Button
               variant="ghost"
               className="flex items-center gap-2"
@@ -91,7 +91,7 @@ const ChatInput = ({
         {/* Input Container */}
         <form
           onSubmit={handleSubmit}
-          className="flex items-end w-full py-2 bg-white rounded-md shadow-sm focus-within:outline focus-within:outline-neutral-300 dark:focus-within:outline-neutral-500 focus-within:outline-1 dark:bg-neutral-900"
+          className="flex items-center w-full py-2 bg-white rounded-md shadow-sm focus-within:outline focus-within:outline-neutral-300 dark:focus-within:outline-neutral-500 focus-within:outline-1 dark:bg-neutral-900"
         >
           <Textarea
             className="h-auto peer"
@@ -104,9 +104,17 @@ const ChatInput = ({
           <button type="submit">
             <Send
               size="18"
-              className="mb-2 mr-4 text-neutral-600 dark:peer-focus:text-neutral-500 peer-focus:text-neutral-300"
+              className="mr-4 text-neutral-600 dark:peer-focus:text-neutral-500 peer-focus:text-neutral-300"
             />
           </button>
+          {/* Regenerate Controller - Desktop */}
+          {!isHandling && isRegenerateSeen && (
+            <RefreshCw
+              onClick={regenerateHandler}
+              size="18"
+              className="mr-4 cursor-pointer text-neutral-600 dark:peer-focus:text-neutral-500 peer-focus:text-neutral-300 sm:hidden"
+            />
+          )}
         </form>
       </div>
     </div>

@@ -30,7 +30,7 @@ const Chats = () => {
         </h3>
       )}
       {chats && !isLoading ? (
-        <div className="flex flex-col gap-4 mt-2 overflow-y-auto max-h-screen60">
+        <div className="flex flex-col gap-4 mt-2 overflow-y-auto">
           {chats?.map((chat) => (
             <Chat key={chat.id} chat={chat} />
           ))}
