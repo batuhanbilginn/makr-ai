@@ -67,7 +67,10 @@ export default function SupabaseAuthProvider({
     await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: "http://localhost:3000/chat",
+        redirectTo:
+          process.env.NODE_ENV === "production"
+            ? undefined
+            : "http://localhost:3000/chat",
       },
     });
   };
