@@ -12,9 +12,10 @@ export async function middleware(req: NextRequest) {
 
   const {
     data: { session },
+    error,
   } = await supabase.auth.getSession();
 
-  console.log("session", session);
+  console.log("error", error);
 
   if (!session && pathname.startsWith("/chat")) {
     const url = new URL(req.url);
