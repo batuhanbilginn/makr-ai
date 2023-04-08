@@ -66,12 +66,12 @@ export default function SupabaseAuthProvider({
   const signInWithGithub = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "github",
-      options: {
+      /* options: {
         redirectTo:
           process.env.NODE_ENV === "production"
             ? undefined
             : "http://localhost:3000/chat",
-      },
+      }, */
     });
   };
 
