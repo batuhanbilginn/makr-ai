@@ -14,7 +14,7 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session && pathname.startsWith("/chat")) {
+  /*   if (!session && pathname.startsWith("/chat")) {
     const url = new URL(req.url);
     url.pathname = "/login";
     return NextResponse.redirect(url);
@@ -24,7 +24,7 @@ export async function middleware(req: NextRequest) {
     const url = new URL(req.url);
     url.pathname = "/chat";
     return NextResponse.redirect(url);
-  }
+  } */
 
   return res;
 }
