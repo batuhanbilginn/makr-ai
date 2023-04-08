@@ -3,34 +3,32 @@
 import {
   addMessageAtom,
   cancelHandlerAtom,
+  chatIDAtom,
+  currentChatHasMessagesAtom,
   inputAtom,
   regenerateHandlerAtom,
 } from "@/atoms/chat";
 import useChats from "@/hooks/useChats";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { RefreshCw, Send, StopCircle } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import ChatSettingsMenu from "./chat-settings-menu";
 
-const ChatInput = ({
-  isExistingChat,
-  chatID,
-}: {
-  isExistingChat: boolean;
-  chatID?: string;
-}) => {
+const ChatInput = () => {
   const { addChatHandler } = useChats();
   const [inputValue, setInputValue] = useAtom(inputAtom);
   const [isHandling, addMessageHandler] = useAtom(addMessageAtom);
   const [isRegenerateSeen, regenerateHandler] = useAtom(regenerateHandlerAtom);
+  const hasChatMessages = useAtomValue(currentChatHasMessagesAtom);
   const cancelHandler = useSetAtom(cancelHandlerAtom);
+  const chatID = useAtomValue(chatIDAtom);
 
   // Handle Submit
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!isExistingChat && !chatID) {
+    if (!hasChatMessages && !chatID) {
       await addChatHandler();
     } else {
       await addMessageHandler("generate");
@@ -42,14 +40,15 @@ const ChatInput = ({
     async (e: KeyboardEvent) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        if (!isExistingChat && !chatID) {
+        if (!hasChatMessages && !chatID) {
+          console.log("This Works");
           await addChatHandler();
         } else {
           await addMessageHandler("generate");
         }
       }
     },
-    [isExistingChat, chatID, addMessageHandler, addChatHandler]
+    [hasChatMessages, chatID, addMessageHandler, addChatHandler]
   );
 
   // Subsribe to Key Down Event
@@ -87,7 +86,7 @@ const ChatInput = ({
           </div>
         )}
         {/* Settings */}
-        {isExistingChat && <ChatSettingsMenu />}
+        {hasChatMessages && <ChatSettingsMenu />}
         {/* Input Container */}
         <form
           onSubmit={handleSubmit}

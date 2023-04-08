@@ -16,7 +16,6 @@ import {
 const ProfileMenu = () => {
   const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center w-full gap-3">

@@ -8,6 +8,8 @@ import { atom } from "jotai";
 import { createRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 
+export const tryAtom = atom("Hello World");
+
 export const defaultSystemPropmt = `You are makrGPT, a large language model trained by OpenAI.`;
 
 // To control OpenAI Settings
@@ -52,15 +54,19 @@ const handlingAtom = atom<boolean>(false);
 export const chatboxRefAtom = atom(createRef<HTMLDivElement>());
 export const inputAtom = atom<string>("");
 
-// Where we keep current chat ID - We use this to keep track of current chat
-export const chatIDAtom = atom<string>("");
-// Where we keep current chat (Read Only - We keep this updated based on chatID, so we don't need to update it manually)
+// Where we keep current chat ID - (Read Only)
+export const chatIDAtom = atom<string>((get) => get(currentChatAtom)?.id ?? "");
+// Where we keep current chat
 export const currentChatAtom = atom<null | ChatWithMessageCountAndSettings>(
-  (get) => get(chatsAtom).find((chat) => chat.id === get(chatIDAtom)) ?? null
+  null
 );
 export const chatsAtom = atom<ChatWithMessageCountAndSettings[]>([]);
 // Where we keep all the messages
 export const messagesAtom = atom<MessageT[]>([]);
+// Read Only
+export const currentChatHasMessagesAtom = atom<boolean>(
+  (get) => get(messagesAtom).length > 0
+);
 
 // Abort Controller for OpenAI Stream
 const abortControllerAtom = atom<AbortController>(new AbortController());
@@ -82,7 +88,13 @@ export const addMessageAtom = atom(
     const isHandlig = get(handlingAtom);
     const chatID = get(chatIDAtom);
     // Early Returns
-    if (isHandlig || (inputValue.length < 2 && action !== "regenerate")) return;
+    if (isHandlig || (inputValue.length < 2 && action !== "regenerate")) {
+      console.log({ inputValue });
+      console.log({ isHandlig });
+      console.log({ chatID });
+      console.log({ action });
+      return;
+    }
 
     // Build User's Message Object in Function Scope - We need to use it in multiple places
     const userMessage: MessageT = {
@@ -119,6 +131,7 @@ export const addMessageAtom = atom(
 
     if (action === "generate") {
       /* 1) Add User Message to the State */
+      console.log("Adding User Message to the State");
       set(messagesAtom, (prev) => {
         return [...prev, userMessage];
       });

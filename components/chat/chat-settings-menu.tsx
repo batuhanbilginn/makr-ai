@@ -1,10 +1,9 @@
 "use client";
 import { currentChatAtom, defaultSystemPropmt } from "@/atoms/chat";
-import useChats from "@/hooks/useChats";
 import { useSupabase } from "@/lib/supabase/supabase-provider";
-import { useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import { Info } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -24,32 +23,21 @@ import { TextareaDefault } from "../ui/textarea-default";
 
 const ChatSettingsMenu = () => {
   const { supabase } = useSupabase();
-  const currentChat = useAtomValue(currentChatAtom);
-  const { mutate } = useChats();
+
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const [model, setModel] = useState("gpt-3.5-turbo");
-  const [systemPropmt, setSystemPropmt] = useState(defaultSystemPropmt);
+  const [currentChat, setCurrentChat] = useAtom(currentChatAtom);
 
-  // Set the Current Chat's Settings
-  useEffect(() => {
-    if (currentChat) {
-      setModel(currentChat.model!!);
-      setSystemPropmt(currentChat.system_prompt!!);
-    }
-  }, [currentChat]);
-
-  const saveHandler = async () => {
+  const saveHandler = useCallback(async () => {
     await supabase
       .from("chats")
       .update({
-        model,
-        system_prompt: systemPropmt,
+        model: currentChat?.model,
+        system_prompt: currentChat?.system_prompt,
       })
       .eq("id", currentChat?.id);
 
-    await mutate();
     triggerRef.current?.click();
-  };
+  }, [currentChat, supabase]);
   return (
     <div>
       <Dialog>
@@ -77,9 +65,11 @@ const ChatSettingsMenu = () => {
             <Label>Model</Label>
             <Select
               onValueChange={(value) =>
-                setModel(value as "gpt-3.5-turbo" | "gpt-4")
+                setCurrentChat((prev) =>
+                  prev ? { ...prev, model: value } : prev
+                )
               }
-              value={model}
+              value={currentChat?.model as string}
             >
               <SelectTrigger className="w-full mt-3">
                 <SelectValue placeholder="Select a model." />
@@ -89,7 +79,7 @@ const ChatSettingsMenu = () => {
                 <SelectItem value="gpt-4">GPT 4</SelectItem>
               </SelectContent>
             </Select>
-            {model === "gpt-4" && (
+            {currentChat?.model === "gpt-4" && (
               <div className="flex items-center gap-2 mt-3 dark:text-neutral-400">
                 <Info size="14" />
                 <div className="text-xs font-light ">
@@ -102,9 +92,16 @@ const ChatSettingsMenu = () => {
             <div className="mt-6">
               <Label>System Propmt</Label>
               <TextareaDefault
-                value={systemPropmt}
+                value={currentChat?.system_prompt as string}
                 onChange={(e) => {
-                  setSystemPropmt(e.target.value);
+                  setCurrentChat((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          system_prompt: e.target.value,
+                        }
+                      : prev
+                  );
                 }}
                 className="mt-3"
               />

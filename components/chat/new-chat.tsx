@@ -1,3 +1,4 @@
+"use client";
 import { openAISettingsAtom } from "@/atoms/chat";
 import { useAtom } from "jotai";
 import { focusAtom } from "jotai-optics";

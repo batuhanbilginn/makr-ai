@@ -8,27 +8,19 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const pathname = req.nextUrl.pathname;
 
-  console.log({ req });
-
   const supabase = createMiddlewareSupabaseClient<Database>({ req, res });
 
   const {
     data: { session },
-    error,
   } = await supabase.auth.getSession();
-
-  console.log("error", error);
 
   if (!session && pathname.startsWith("/chat")) {
     const url = new URL(req.url);
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
-  console.log(process.env.NODE_ENV);
-  console.log(pathname);
 
   if (session && (pathname === "/" || pathname === "/#")) {
-    console.log("redirecting to chat");
     const url = new URL(req.url);
     url.pathname = "/chat";
     return NextResponse.redirect(url);
