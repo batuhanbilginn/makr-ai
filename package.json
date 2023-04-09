@@ -19,7 +19,7 @@
     "@radix-ui/react-separator": "^1.0.2",
     "@radix-ui/react-tooltip": "^1.0.5",
     "@supabase/auth-helpers-nextjs": "^0.6.0",
-    "@supabase/supabase-js": "^2.14.0",
+    "@supabase/supabase-js": "2.15.0",
     "@types/luxon": "^3.2.2",
     "@types/node": "18.15.11",
     "@types/react": "18.0.31",
