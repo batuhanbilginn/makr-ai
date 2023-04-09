@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from "uuid";
 
 export const tryAtom = atom("Hello World");
 
-export const defaultSystemPropmt = `You are makrGPT, a large language model trained by OpenAI.`;
+export const defaultSystemPropmt = `You are makr.AI, a large language model trained by OpenAI.`;
 
 // To control OpenAI Settings
 export const openAISettingsAtom = atom<OpenAISettings>({
