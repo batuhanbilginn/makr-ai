@@ -81,7 +81,7 @@ const ChatSettingsMenu = () => {
           <div className="mt-6">
             <Label>Model</Label>
             <Select
-              onValueChange={async (value) => {
+              onValueChange={async (value: "gpt-4" | "gpt-3.5-turbo") => {
                 setCurrentChat((prev) =>
                   prev ? { ...prev, model: value } : prev
                 );
@@ -98,8 +98,8 @@ const ChatSettingsMenu = () => {
                 <SelectValue placeholder="Select a model." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
-                <SelectItem value="gpt-4">GPT 4</SelectItem>
+                <SelectItem value={"gpt-3.5-turbo"}>GPT-3.5 Turbo</SelectItem>
+                <SelectItem value={"gpt-4"}>GPT 4</SelectItem>
               </SelectContent>
             </Select>
             {currentChat?.model === "gpt-4" && (

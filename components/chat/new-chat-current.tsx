@@ -68,7 +68,7 @@ const NewChatCurrent = () => {
         <div className="mt-6">
           <Label>Model</Label>
           <Select
-            onValueChange={async (value) => {
+            onValueChange={async (value: "gpt-4" | "gpt-3.5-turbo") => {
               setCurrentChat((prev) =>
                 prev ? { ...prev, model: value } : prev
               );

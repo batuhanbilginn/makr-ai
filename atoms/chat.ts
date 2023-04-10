@@ -27,12 +27,13 @@ export const openAISettingsAtom = atom<OpenAISettings>({
 
 // To combine all settings and messages in a state for sending new message (Read Only)
 const openAIPayload = atom<OpenAIStreamPayload>((get) => {
+  const currentChat = get(currentChatAtom);
   return {
-    model: get(openAISettingsAtom).model,
+    model: currentChat?.model ?? "gpt-3.5-turbo",
     messages: [
       {
         content:
-          get(currentChatAtom)?.system_prompt!! +
+          currentChat?.system_prompt!! +
           `Answer as concisely as possible and ALWAYS answer in MARKDOWN. Current date: ${new Date()}`,
         role: "system",
       },
@@ -44,7 +45,7 @@ const openAIPayload = atom<OpenAIStreamPayload>((get) => {
           } as ChatGPTMessage)
       ),
     ],
-    ...get(currentChatAtom)?.advanced_settings!!,
+    ...currentChat?.advanced_settings!!,
   };
 });
 
@@ -89,14 +90,7 @@ export const addMessageAtom = atom(
     const isHandlig = get(handlingAtom);
     const chatID = get(chatIDAtom);
     // Early Returns
-    if (isHandlig || (inputValue.length < 2 && action !== "regenerate")) {
-      console.log("Early Return");
-      console.log({ inputValue });
-      console.log({ isHandlig });
-      console.log({ chatID });
-      console.log({ action });
-      return;
-    }
+    if (isHandlig || (inputValue.length < 2 && action !== "regenerate")) return;
 
     // Build User's Message Object in Function Scope - We need to use it in multiple places
     const userMessage: MessageT = {
@@ -133,7 +127,6 @@ export const addMessageAtom = atom(
 
     if (action === "generate") {
       /* 1) Add User Message to the State */
-      console.log("Adding User Message to the State");
       set(messagesAtom, (prev) => {
         return [...prev, userMessage];
       });

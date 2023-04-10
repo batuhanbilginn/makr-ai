@@ -33,7 +33,6 @@
     "eslint": "8.37.0",
     "eslint-config-next": "13.2.4",
     "eventsource-parser": "^1.0.0",
-    "framer-motion": "^10.10.0",
     "highlight.js": "^11.7.0",
     "jotai": "^2.0.3",
     "jotai-optics": "^0.3.0",
