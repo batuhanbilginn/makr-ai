@@ -249,7 +249,9 @@ export const addMessageAtom = atom(
           });
         }
       }
-    } else {
+    }
+    // Regenerate
+    else {
       const instertedMessages = await addMessagetoSupabase([finalAIMessage!]);
       // Change the dummy IDs with the real ones
       if (!instertedMessages) {
