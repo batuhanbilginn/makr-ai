@@ -90,6 +90,7 @@ export const addMessageAtom = atom(
     const chatID = get(chatIDAtom);
     // Early Returns
     if (isHandlig || (inputValue.length < 2 && action !== "regenerate")) {
+      console.log("Early Return");
       console.log({ inputValue });
       console.log({ isHandlig });
       console.log({ chatID });

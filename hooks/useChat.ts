@@ -4,11 +4,10 @@ import {
   currentChatHasMessagesAtom,
   messagesAtom,
 } from "@/atoms/chat";
-import { useSupabase } from "@/lib/supabase/supabase-provider";
 import { ChatWithMessageCountAndSettings, MessageT } from "@/types/collections";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 const useChat = ({
   currentChat,
@@ -18,12 +17,10 @@ const useChat = ({
   initialMessages: MessageT[];
 }) => {
   const chatID = currentChat?.id;
-
-  const { supabase } = useSupabase();
   const addMessageHandler = useSetAtom(addMessageAtom);
   const hasChatMessages = useAtomValue(currentChatHasMessagesAtom);
   const setMessages = useSetAtom(messagesAtom);
-  const [currentChatState, setCurrentChat] = useAtom(currentChatAtom);
+  const setCurrentChat = useSetAtom(currentChatAtom);
 
   // Set Initial Chat
   useEffect(() => {
@@ -39,17 +36,6 @@ const useChat = ({
   );
   const isChatNew = writableParams.get("new") === "true";
 
-  // Save Chat's Current Settings if it's a new chat
-  const saveHandler = useCallback(async () => {
-    await supabase
-      .from("chats")
-      .update({
-        model: currentChatState?.model,
-        system_prompt: currentChatState?.system_prompt,
-      })
-      .eq("id", currentChatState?.id);
-  }, [currentChatState, supabase]);
-
   // Send First Message if it's a new chat
   useEffect(() => {
     if (isChatNew && chatID) {
@@ -59,14 +45,7 @@ const useChat = ({
         router.replace(`/chat/${chatID}`);
       });
     }
-  }, [
-    addMessageHandler,
-    chatID,
-    isChatNew,
-    router,
-    saveHandler,
-    writableParams,
-  ]);
+  }, [addMessageHandler, chatID, isChatNew, router, writableParams]);
 
   return {
     hasChatMessages,
