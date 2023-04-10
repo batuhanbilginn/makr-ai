@@ -2,9 +2,10 @@
 import { currentChatAtom, defaultSystemPropmt } from "@/atoms/chat";
 import { useSupabase } from "@/lib/supabase/supabase-provider";
 import { useAtom } from "jotai";
+import debounce from "lodash.debounce";
 import { Info } from "lucide-react";
-import { useCallback, useRef } from "react";
-import { Button } from "../ui/button";
+
+import { useCallback, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -23,28 +24,44 @@ import { TextareaDefault } from "../ui/textarea-default";
 
 const ChatSettingsMenu = () => {
   const { supabase } = useSupabase();
-
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const [currentChat, setCurrentChat] = useAtom(currentChatAtom);
 
-  const saveHandler = useCallback(async () => {
-    await supabase
-      .from("chats")
-      .update({
-        model: currentChat?.model,
-        system_prompt: currentChat?.system_prompt,
-      })
-      .eq("id", currentChat?.id);
+  // Send system prompt to supabase
+  const sendSupabase = useCallback(
+    async (value: string, id: string) => {
+      await supabase
+        .from("chats")
+        .update({
+          system_prompt: value,
+        })
+        .eq("id", id);
+    },
+    [supabase]
+  );
 
-    triggerRef.current?.click();
-  }, [currentChat, supabase]);
+  // Reset System Input to default
+  const resetSystemInput = useCallback(async () => {
+    setCurrentChat((prev) =>
+      prev
+        ? {
+            ...prev,
+            system_prompt: defaultSystemPropmt,
+          }
+        : prev
+    );
+    await sendSupabase(defaultSystemPropmt, currentChat?.id as string);
+  }, [currentChat?.id, sendSupabase, setCurrentChat]);
+
+  // Debounce the supabase call
+  const debouncedSendSupabase = useMemo(
+    () => debounce(sendSupabase, 1000),
+    [sendSupabase]
+  );
+
   return (
     <div>
       <Dialog>
-        <DialogTrigger
-          ref={triggerRef}
-          className="flex items-center gap-4 pt-2 pb-4 text-xs"
-        >
+        <DialogTrigger className="flex items-center gap-4 pt-2 pb-4 text-xs">
           <div className="px-2 py-1 bg-white rounded-md dark:bg-neutral-900">
             <span className=" text-neutral-400">Model: </span>
             {currentChat?.model === "gpt-3.5-turbo" ? "GPT-3.5 Turbo" : "GPT-4"}
@@ -64,11 +81,17 @@ const ChatSettingsMenu = () => {
           <div className="mt-6">
             <Label>Model</Label>
             <Select
-              onValueChange={(value) =>
+              onValueChange={async (value) => {
                 setCurrentChat((prev) =>
                   prev ? { ...prev, model: value } : prev
-                )
-              }
+                );
+                await supabase
+                  .from("chats")
+                  .update({
+                    model: value,
+                  })
+                  .eq("id", currentChat?.id);
+              }}
               value={currentChat?.model as string}
             >
               <SelectTrigger className="w-full mt-3">
@@ -90,24 +113,36 @@ const ChatSettingsMenu = () => {
               </div>
             )}
             <div className="mt-6">
-              <Label>System Propmt</Label>
+              <div className="flex items-center justify-between w-full">
+                <Label>System Propmt</Label>
+                <button
+                  onClick={resetSystemInput}
+                  className="text-xs text-neutral-600"
+                >
+                  Reset to Default
+                </button>
+              </div>
               <TextareaDefault
                 value={currentChat?.system_prompt as string}
-                onChange={(e) => {
+                onChange={async (e) => {
+                  const value = e.target.value;
                   setCurrentChat((prev) =>
                     prev
                       ? {
                           ...prev,
-                          system_prompt: e.target.value,
+                          system_prompt: value,
                         }
                       : prev
+                  );
+                  await debouncedSendSupabase(
+                    value ? value : defaultSystemPropmt,
+                    currentChat?.id as string
                   );
                 }}
                 className="mt-3"
               />
             </div>
           </div>
-          <Button onClick={saveHandler}>Save Settings</Button>
         </DialogContent>
       </Dialog>
     </div>

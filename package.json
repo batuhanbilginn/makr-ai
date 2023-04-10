@@ -34,12 +34,11 @@
     "eslint-config-next": "13.2.4",
     "eventsource-parser": "^1.0.0",
     "framer-motion": "^10.10.0",
-    "google-it": "^1.6.4",
     "highlight.js": "^11.7.0",
     "jotai": "^2.0.3",
     "jotai-optics": "^0.3.0",
     "jotai-utils": "^0.0.0",
-    "lucide": "^0.129.0",
+    "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.129.0",
     "luxon": "^3.3.0",
     "next": "13.3.1-canary.3",
@@ -59,10 +58,11 @@
     "tailwindcss": "^3.3.1",
     "tailwindcss-animate": "^1.0.5",
     "typescript": "5.0.3",
-    "uuid": "^9.0.0",
-    "uuidv4": "^6.2.13"
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@types/lodash.debounce": "^4.0.7",
+    "@types/uuid": "^9.0.1",
     "encoding": "^0.1.13"
   }
 }

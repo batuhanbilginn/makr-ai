@@ -16,6 +16,8 @@ const Chatbox = ({
   initialMessages: MessageT[];
 }) => {
   const hasChatMessages = useAtomValue(currentChatHasMessagesAtom);
+  /*  useHydrateAtoms([[currentChatAtom, currentChat] as const]);
+  useHydrateAtoms([[messagesAtom, initialMessages] as const]); */
   useChat({ currentChat, initialMessages });
 
   return (

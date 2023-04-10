@@ -8,11 +8,9 @@ import { atom } from "jotai";
 import { createRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 
-export const tryAtom = atom("Hello World");
-
 export const defaultSystemPropmt = `You are makr.AI, a large language model trained by OpenAI.`;
 
-// To control OpenAI Settings
+// To control OpenAI Settings when starting new chat (New Chat Component)
 export const openAISettingsAtom = atom<OpenAISettings>({
   model: "gpt-3.5-turbo",
   system_prompt: defaultSystemPropmt,
@@ -50,8 +48,11 @@ const openAIPayload = atom<OpenAIStreamPayload>((get) => {
   };
 });
 
+// To control handling state of add message logic
 const handlingAtom = atom<boolean>(false);
+// Chatbox Ref for controlling scroll
 export const chatboxRefAtom = atom(createRef<HTMLDivElement>());
+// Chat Input
 export const inputAtom = atom<string>("");
 
 // Where we keep current chat ID - (Read Only)
@@ -63,7 +64,7 @@ export const currentChatAtom = atom<null | ChatWithMessageCountAndSettings>(
 export const chatsAtom = atom<ChatWithMessageCountAndSettings[]>([]);
 // Where we keep all the messages
 export const messagesAtom = atom<MessageT[]>([]);
-// Read Only
+// To check if chat has messages (Read Only)
 export const currentChatHasMessagesAtom = atom<boolean>(
   (get) => get(messagesAtom).length > 0
 );

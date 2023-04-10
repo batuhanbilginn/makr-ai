@@ -1,9 +1,10 @@
 "use client";
-import { currentChatAtom } from "@/atoms/chat";
+import { currentChatAtom, defaultSystemPropmt } from "@/atoms/chat";
 import { useSupabase } from "@/lib/supabase/supabase-provider";
 import { useAtom } from "jotai";
+import debounce from "lodash.debounce";
 import { Info } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { Label } from "../ui/label";
 import {
   Select,
@@ -18,21 +19,37 @@ const NewChatCurrent = () => {
   const [currentChat, setCurrentChat] = useAtom(currentChatAtom);
   const { supabase } = useSupabase();
 
-  const saveHandler = useCallback(async () => {
-    console.log("Saving");
-    await supabase
-      .from("chats")
-      .update({
-        model: currentChat?.model,
-        system_prompt: currentChat?.system_prompt,
-      })
-      .eq("id", currentChat?.id);
-  }, [
-    currentChat?.id,
-    currentChat?.model,
-    currentChat?.system_prompt,
-    supabase,
-  ]);
+  // Send system prompt to supabase
+  const sendSupabase = useCallback(
+    async (value: string, id: string) => {
+      await supabase
+        .from("chats")
+        .update({
+          system_prompt: value,
+        })
+        .eq("id", id);
+    },
+    [supabase]
+  );
+
+  // Reset System Input to default
+  const resetSystemInput = useCallback(async () => {
+    setCurrentChat((prev) =>
+      prev
+        ? {
+            ...prev,
+            system_prompt: defaultSystemPropmt,
+          }
+        : prev
+    );
+    await sendSupabase(defaultSystemPropmt, currentChat?.id as string);
+  }, [currentChat?.id, sendSupabase, setCurrentChat]);
+
+  // Debounce the supabase call
+  const debouncedSendSupabase = useMemo(
+    () => debounce(sendSupabase, 1000),
+    [sendSupabase]
+  );
 
   return (
     <div className="flex items-start justify-center flex-1 w-full h-full sm:items-center">
@@ -55,7 +72,13 @@ const NewChatCurrent = () => {
               setCurrentChat((prev) =>
                 prev ? { ...prev, model: value } : prev
               );
-              await saveHandler();
+              // Save to supabase
+              await supabase
+                .from("chats")
+                .update({
+                  model: currentChat?.model,
+                })
+                .eq("id", currentChat?.id);
             }}
             value={currentChat?.model as string}
           >
@@ -78,19 +101,31 @@ const NewChatCurrent = () => {
             </div>
           )}
           <div className="mt-6">
-            <Label>System Propmt</Label>
+            <div className="flex items-center justify-between w-full">
+              <Label>System Propmt</Label>
+              <button
+                onClick={resetSystemInput}
+                className="text-xs text-neutral-600"
+              >
+                Reset to Default
+              </button>
+            </div>
             <TextareaDefault
-              value={currentChat?.system_prompt as string}
+              value={currentChat?.system_prompt ?? defaultSystemPropmt}
               onChange={async (e) => {
+                const value = e.target.value;
                 setCurrentChat((prev) =>
                   prev
                     ? {
                         ...prev,
-                        system_prompt: e.target.value,
+                        system_prompt: value ? value : defaultSystemPropmt,
                       }
                     : prev
                 );
-                await saveHandler();
+                await debouncedSendSupabase(
+                  value ? value : defaultSystemPropmt,
+                  currentChat?.id as string
+                );
               }}
               className="mt-3"
             />

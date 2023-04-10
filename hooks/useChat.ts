@@ -7,7 +7,6 @@ import {
 import { useSupabase } from "@/lib/supabase/supabase-provider";
 import { ChatWithMessageCountAndSettings, MessageT } from "@/types/collections";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useHydrateAtoms } from "jotai/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo } from "react";
 
@@ -19,8 +18,7 @@ const useChat = ({
   initialMessages: MessageT[];
 }) => {
   const chatID = currentChat?.id;
-  useHydrateAtoms([[currentChatAtom, currentChat] as const]);
-  useHydrateAtoms([[messagesAtom, initialMessages] as const]);
+
   const { supabase } = useSupabase();
   const addMessageHandler = useSetAtom(addMessageAtom);
   const hasChatMessages = useAtomValue(currentChatHasMessagesAtom);

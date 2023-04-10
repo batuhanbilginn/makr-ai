@@ -41,7 +41,6 @@ const ChatInput = () => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         if (!hasChatMessages && !chatID) {
-          console.log("This Works");
           await addChatHandler();
         } else {
           await addMessageHandler("generate");
