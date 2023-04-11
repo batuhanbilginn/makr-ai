@@ -78,7 +78,6 @@ const Message = ({ message }: { message: MessageT }) => {
                 },
               }}
               rehypePlugins={[rehypeHighlight]}
-              /* remarkPlugins={[remarkGfm]} */
             >
               {message.content ?? ""}
             </ReactMarkdown>

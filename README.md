@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# makr.AI
 
-## Getting Started
+makr.AI is a ChatGPT clone with enhanced features for makers & indie hackers built on top of using Next.js, TypeScript, Supabase, Jotai and Tailwind CSS.
 
-First, run the development server:
+![Chatbot UI](./public/readme-hero.jpg)
+
+Check this [Youtube video](https://youtu.be/yrXLvCB0ByA) to learn more.
+
+## Roadmap
+
+I'll be building new features over time. If you have any suggestions, feel free to open a discussion or reach out to me on [Twitter](https://twitter.com/makrdev). I listed the features I'm working on next below.
+
+**What to expect:**
+
+- [ ] Long-term Memory for Conversations (Supabase's Vector Database)
+- [ ] Propmt Library
+- [ ] Organising Conversations with Folders etc.
+- [ ] Collections Library for saving responses
+- [ ] Plugins ecosystem with GPT agents
+
+## Deploy
+
+**Vercel**
+
+Host your own live version of Chatbot UI with Vercel.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/batuhanbilginn/makr-ai)
+
+**Replit**
+
+Fork Chatbot UI on Replit [here](https://replit.com/@MckayWrigley/chatbot-ui-pro?v=1).
+
+## Running Locally
+
+**1. Clone Repo**
+
+```bash
+git clone https://github.com/mckaywrigley/chatbot-ui.git
+```
+
+**2. Install Dependencies**
+
+```bash
+npm i
+```
+
+**3. Provide OpenAI API Key**
+
+Create a .env.local file in the root of the repo with your OpenAI API Key:
+
+```bash
+OPENAI_API_KEY=YOUR_KEY
+```
+
+> You can set `OPENAI_API_HOST` where access to the official OpenAI host is restricted or unavailable, allowing users to configure an alternative host for their specific needs.
+
+> Additionally, if you have multiple OpenAI Organizations, you can set `OPENAI_ORGANIZATION` to specify one.
+
+**4. Run App**
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**5. Use It**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You should be able to start chatting.
 
-[http://localhost:3000/api/hello](http://localhost:3000/api/hello) is an endpoint that uses [Route Handlers](https://beta.nextjs.org/docs/routing/route-handlers). This endpoint can be edited in `app/api/hello/route.ts`.
+## Configuration
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+When deploying the application, the following environment variables can be set:
 
-## Learn More
+| Environment Variable  | Default value                  | Description                                                                 |
+| --------------------- | ------------------------------ | --------------------------------------------------------------------------- |
+| OPENAI_API_KEY        |                                | The default API key used for authentication with OpenAI                     |
+| OPENAI_API_HOST       | `https://api.openai.com`       | The base url, for Azure use `https://<endpoint>.openai.azure.com`           |
+| OPENAI_API_TYPE       | `openai`                       | The API type, options are `openai` or `azure`                               |
+| OPENAI_API_VERSION    | `2023-03-15-preview`           | Only applicable for Azure OpenAI                                            |
+| OPENAI_ORGANIZATION   |                                | Your OpenAI organization ID                                                 |
+| DEFAULT_MODEL         | `gpt-3.5-turbo`                | The default model to use on new conversations, for Azure use `gpt-35-turbo` |
+| DEFAULT_SYSTEM_PROMPT | [see here](utils/app/const.ts) | The default system prompt to use on new conversations                       |
+| GOOGLE_API_KEY        |                                | See [Custom Search JSON API documentation][gcse]                            |
+| GOOGLE_CSE_ID         |                                | See [Custom Search JSON API documentation][gcse]                            |
 
-To learn more about Next.js, take a look at the following resources:
+If you do not provide an OpenAI API key with `OPENAI_API_KEY`, users will have to provide their own key.
+If you don't have an OpenAI API key, you can get one [here](https://platform.openai.com/account/api-keys).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Contact
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+If you have any questions, feel free to reach out to me on [Twitter](https://twitter.com/mckaywrigley).
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+[gcse]: https://developers.google.com/custom-search/v1/overview

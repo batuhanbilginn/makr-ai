@@ -8,11 +8,15 @@ import { useEffect } from "react";
 import useSWR from "swr";
 
 const useChats = () => {
+  // Auth & Supabase
   const { user } = useAuth();
   const { supabase } = useSupabase();
-  const router = useRouter();
+
+  // States
   const openAISettings = useAtomValue(openAISettingsAtom);
   const [chats, setChats] = useAtom(chatsAtom);
+
+  const router = useRouter();
 
   const fetcher = async () => {
     const { data, error } = await supabase
