@@ -79,7 +79,6 @@ When deploying the application, the following environment variables can be set:
 | NEXT_PUBLIC_SUPABASE_URL      | -             | The base url of your Supabase Project  |
 | NEXT_PUBLIC_SUPABASE_ANON_KEY | -             | The Anon Key for your Supabase Project |
 
-|
 
 If you don't have an OpenAI API key, you can get one [here](https://platform.openai.com/account/api-keys).
 
