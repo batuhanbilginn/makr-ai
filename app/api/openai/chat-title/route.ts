@@ -4,7 +4,7 @@ import { ChatGPTMessage } from "@/types/openai";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request): Promise<Response> {
-  const { messages, chatID, key } = await req.json();
+  const { messages, chatID, apiKey } = await req.json();
 
   if (!messages) {
     return new Response("No messages!", { status: 400 });
@@ -14,7 +14,7 @@ export async function POST(req: Request): Promise<Response> {
     return new Response("No chatID!", { status: 400 });
   }
 
-  if (!key) {
+  if (!apiKey) {
     return new Response("No key!", { status: 400 });
   }
 
@@ -30,7 +30,7 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   // Create OpenAI Client
-  const openaiClient = openai(key);
+  const openaiClient = openai(apiKey);
 
   const typeCorrectedMessages = messages as ChatGPTMessage[];
 
