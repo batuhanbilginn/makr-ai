@@ -155,6 +155,14 @@ export const addMessageAtom = atom(
       }
     };
 
+    // Scroll Down Handler
+    const scrollDown = () => {
+      const chatboxRef = get(chatboxRefAtom);
+      if (chatboxRef.current) {
+        chatboxRef.current.scrollTop = chatboxRef.current.scrollHeight;
+      }
+    };
+
     // Start Handling
     set(handlingAtom, true);
 
@@ -166,6 +174,9 @@ export const addMessageAtom = atom(
 
       // Clear Input
       set(inputAtom, "");
+
+      // Scroll down after insert
+      scrollDown();
     }
 
     /* 2) Send Messages to the API to get response from OpenAI */
@@ -184,6 +195,9 @@ export const addMessageAtom = atom(
         },
       ];
     });
+
+    // Scroll down after insert
+    scrollDown();
 
     // Response Fetcher and Stream Handler
     try {
@@ -231,12 +245,8 @@ export const addMessageAtom = atom(
           ];
         });
 
-        const chatboxRef = get(chatboxRefAtom);
-
         /* Scroll to the bottom as we get chunk */
-        if (chatboxRef.current) {
-          chatboxRef.current.scrollTop = chatboxRef.current.scrollHeight;
-        }
+        scrollDown();
       }
     } catch (error) {
       console.log(error);
@@ -317,44 +327,46 @@ export const addMessageAtom = atom(
       }
     }
 
-    /* 3) Change Conversiation Title */
-    try {
-      // If chat is new, update the chat title
-      const isChatNew = get(messagesAtom).length === 2;
-      if (isChatNew) {
-        const response = await fetch("/api/openai/chat-title", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            messages: get(messagesAtom).map((message) => {
-              return {
-                content: message.content,
-                role: message.role,
-              };
-            }),
-            chatID: get(chatIDAtom),
-            apiKey: get(openAIAPIKeyAtom),
-          }),
-        });
-        const { title } = await response.json();
-        if (title) {
-          set(chatsAtom, (prev) => {
-            return prev.map((c) => {
-              if (c.id === get(chatIDAtom)) {
+    /* 3) Change Conversation Title */
+    if (action === "generate") {
+      try {
+        // If chat is new, update the chat title
+        const isChatNew = get(messagesAtom).length === 2;
+        if (isChatNew) {
+          const response = await fetch("/api/openai/chat-title", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              messages: get(messagesAtom).map((message) => {
                 return {
-                  ...c,
-                  title,
+                  content: message.content,
+                  role: message.role,
                 };
-              }
-              return c;
-            });
+              }),
+              chatID: get(chatIDAtom),
+              apiKey: get(openAIAPIKeyAtom),
+            }),
           });
+          const { title } = await response.json();
+          if (title) {
+            set(chatsAtom, (prev) => {
+              return prev.map((c) => {
+                if (c.id === get(chatIDAtom)) {
+                  return {
+                    ...c,
+                    title,
+                  };
+                }
+                return c;
+              });
+            });
+          }
         }
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error);
     }
   }
 );
