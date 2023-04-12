@@ -96,7 +96,7 @@ const OpenAIKeyProvider = ({ children }: { children: React.ReactNode }) => {
           </div>
         </div>
       )}
-      {children}
+      {openAIKey && children}
     </>
   );
 };

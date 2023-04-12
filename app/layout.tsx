@@ -32,9 +32,7 @@ export default async function RootLayout({
         <SupabaseProvider>
           <SupabaseAuthProvider serverSession={session}>
             <ThemeProviderClient>
-              <JotaiProvider>
-                <OpenAIKeyProvider>{children}</OpenAIKeyProvider>
-              </JotaiProvider>
+              <JotaiProvider>{children}</JotaiProvider>
             </ThemeProviderClient>
           </SupabaseAuthProvider>
         </SupabaseProvider>
