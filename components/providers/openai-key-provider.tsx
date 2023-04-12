@@ -1,6 +1,7 @@
 "use client";
 
 import { openAPIKeyHandlerAtom } from "@/atoms/chat";
+import { useAuth } from "@/lib/supabase/supabase-auth-provider";
 import { useAtom } from "jotai";
 import { Key } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -13,6 +14,7 @@ const OpenAIKeyProvider = ({ children }: { children: React.ReactNode }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isHandling, setIsHandling] = useState<boolean>(false);
   const [isChecked, setIsChecked] = useState<boolean>(false);
+  const { user } = useAuth();
 
   // Save Handler
   const saveHandler = async (e: React.FormEvent) => {
@@ -48,7 +50,7 @@ const OpenAIKeyProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
-      {!openAIKey && isChecked && (
+      {!openAIKey && isChecked && user && (
         <div
           id="openai"
           className="fixed inset-0 dark:bg-neutral-950/40 backdrop-blur-md z-[99999] flex items-center justify-center"
