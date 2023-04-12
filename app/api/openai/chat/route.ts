@@ -1,10 +1,6 @@
 import { OpenAIStream } from "@/lib/openai-stream";
 import { createClient } from "@/lib/supabase/supabase-server";
 
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error("Missing env var from OpenAI");
-}
-
 export const runtime = "experimental-edge";
 
 export async function POST(req: Request): Promise<Response> {

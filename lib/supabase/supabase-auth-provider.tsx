@@ -68,8 +68,10 @@ export default function SupabaseAuthProvider({
       provider: "github",
       options: {
         redirectTo:
-          process.env.NODE_ENV === "production"
-            ? undefined
+          process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
+            ? "https://ai.makr.dev/chat"
+            : process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
+            ? "https://preview-ai.makr.dev/chat"
             : "http://localhost:3000/chat",
       },
     });

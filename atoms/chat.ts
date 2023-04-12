@@ -1,6 +1,8 @@
 import { ChatWithMessageCountAndSettings, MessageT } from "@/types/collections";
 import {
   ChatGPTMessage,
+  OpenAIKeyOptional,
+  OpenAIKeyRequired,
   OpenAISettings,
   OpenAIStreamPayload,
 } from "@/types/openai";
@@ -9,6 +11,29 @@ import { createRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 export const defaultSystemPropmt = `You are makr.AI, a large language model trained by OpenAI.`;
+
+// To hold OpenAI API Key (Not Exported)
+const openAIAPIKeyAtom = atom<string>("");
+
+// To control OpenAI API Key (Set and Delete)
+export const openAPIKeyHandlerAtom = atom(
+  (get) => get(openAIAPIKeyAtom),
+  (_get, set, payload: OpenAIKeyOptional | OpenAIKeyRequired) => {
+    if (payload.action === "remove") {
+      set(openAIAPIKeyAtom, "");
+      localStorage.removeItem("openai-api-key");
+    } else if (payload.action === "set") {
+      set(openAIAPIKeyAtom, payload.key);
+      localStorage.setItem("openai-api-key", payload.key);
+    } else if (payload.action === "get") {
+      // Check ENV first
+      const localKey = localStorage.getItem("openai-api-key");
+      if (localKey) {
+        set(openAIAPIKeyAtom, localKey);
+      }
+    }
+  }
+);
 
 // To control OpenAI Settings when starting new chat (New Chat Component)
 export const openAISettingsAtom = atom<OpenAISettings>({
@@ -29,6 +54,7 @@ export const openAISettingsAtom = atom<OpenAISettings>({
 const openAIPayload = atom<OpenAIStreamPayload>((get) => {
   const currentChat = get(currentChatAtom);
   return {
+    apiKey: get(openAIAPIKeyAtom),
     model: currentChat?.model ?? "gpt-3.5-turbo",
     messages: [
       {
@@ -89,8 +115,15 @@ export const addMessageAtom = atom(
     const inputValue = get(inputAtom);
     const isHandlig = get(handlingAtom);
     const chatID = get(chatIDAtom);
+    const apiKey = get(openAIAPIKeyAtom);
     // Early Returns
-    if (isHandlig || (inputValue.length < 2 && action !== "regenerate")) return;
+    if (
+      isHandlig ||
+      (inputValue.length < 2 && action !== "regenerate") ||
+      !apiKey
+    ) {
+      return;
+    }
 
     // Build User's Message Object in Function Scope - We need to use it in multiple places
     const userMessage: MessageT = {
@@ -122,22 +155,33 @@ export const addMessageAtom = atom(
       }
     };
 
+    // Scroll Down Handler
+    const scrollDown = () => {
+      const chatboxRef = get(chatboxRefAtom);
+      if (chatboxRef.current) {
+        chatboxRef.current.scrollTop = chatboxRef.current.scrollHeight;
+      }
+    };
+
     // Start Handling
     set(handlingAtom, true);
 
+    /* 1) Add User Message to the State */
     if (action === "generate") {
-      /* 1) Add User Message to the State */
       set(messagesAtom, (prev) => {
         return [...prev, userMessage];
       });
 
       // Clear Input
       set(inputAtom, "");
+
+      // Scroll down after insert
+      scrollDown();
     }
 
-    /* 2) Send to the API */
-    // Set initial message
+    /* 2) Send Messages to the API to get response from OpenAI */
     const initialID = uuidv4();
+    // Set Initial Message to the State (We need show "thinking" message to the user before we get response")
     set(messagesAtom, (prev) => {
       return [
         ...prev,
@@ -152,38 +196,61 @@ export const addMessageAtom = atom(
       ];
     });
 
-    // Stream Handler (This code is from Hassan's example)
-    const response = await fetch("/api/openai/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        payload: get(openAIPayload),
-      }),
-      signal: get(abortControllerAtom).signal,
-    });
+    // Scroll down after insert
+    scrollDown();
 
-    if (!response.ok) {
-      console.log(response);
-      throw new Error(response.statusText);
-    }
+    // Response Fetcher and Stream Handler
+    try {
+      const response = await fetch("/api/openai/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          payload: get(openAIPayload),
+        }),
+        signal: get(abortControllerAtom).signal,
+      });
 
-    // This data is a ReadableStream
-    const data = response.body;
-    if (!data) {
-      console.log("No data", response);
-      return;
-    }
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
 
-    const reader = data.getReader();
-    const decoder = new TextDecoder();
-    let done = false;
+      // This data is a ReadableStream
+      const data = response.body;
+      if (!data) {
+        throw new Error("No data from response.");
+      }
 
-    while (!done) {
-      const { value, done: doneReading } = await reader.read();
-      done = doneReading;
-      const chunkValue = decoder.decode(value);
+      const reader = data.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        const chunkValue = decoder.decode(value);
+        set(messagesAtom, (prev) => {
+          const responseMessage = prev.find((m) => m.id === initialID);
+          if (!responseMessage) {
+            console.log("No response message", responseMessage);
+            return prev;
+          }
+          return [
+            ...prev.filter((m) => m.id !== initialID),
+            {
+              ...responseMessage,
+              content: responseMessage?.content + chunkValue,
+            },
+          ];
+        });
+
+        /* Scroll to the bottom as we get chunk */
+        scrollDown();
+      }
+    } catch (error) {
+      console.log(error);
+      // Set Error Message into the State
       set(messagesAtom, (prev) => {
         const responseMessage = prev.find((m) => m.id === initialID);
         if (!responseMessage) {
@@ -194,113 +261,112 @@ export const addMessageAtom = atom(
           ...prev.filter((m) => m.id !== initialID),
           {
             ...responseMessage,
-            content: responseMessage?.content + chunkValue,
+            content: "Oops! Something went wrong. Please try again.",
           },
         ];
       });
+    } finally {
+      // Stop Handling
+      set(handlingAtom, false);
+      // Add messages to the Supabase if exists
+      const finalAIMessage = get(messagesAtom).find(
+        (m) => m.id === initialID
+      ) as MessageT;
+      if (action === "generate") {
+        const instertedMessages = await addMessagetoSupabase(
+          finalAIMessage ? [userMessage, finalAIMessage] : [userMessage]
+        );
 
-      const chatboxRef = get(chatboxRefAtom);
-
-      /* Scroll to the bottom as we get chunk */
-      if (chatboxRef.current) {
-        chatboxRef.current.scrollTop = chatboxRef.current.scrollHeight;
-      }
-    }
-
-    // Stop Handling
-    set(handlingAtom, false);
-    // Add messages to the Supabase
-    const finalAIMessage = get(messagesAtom).find(
-      (m) => m.id === initialID
-    ) as MessageT;
-    if (action === "generate") {
-      const instertedMessages = await addMessagetoSupabase(
-        finalAIMessage ? [userMessage, finalAIMessage] : [userMessage]
-      );
-      // Change the dummy IDs with the real ones
-      if (!instertedMessages) {
-        console.log("No inserted messages");
-        return;
-      }
-      for (const message of instertedMessages) {
-        if (message.role === "user") {
-          set(messagesAtom, (prev) => {
-            return prev.map((m) => {
-              if (m.id === userMessage.id) {
-                return {
-                  ...m,
-                  id: message.id,
-                };
-              }
-              return m;
+        for (const message of instertedMessages) {
+          if (message.role === "user") {
+            set(messagesAtom, (prev) => {
+              return prev.map((m) => {
+                if (m.id === userMessage.id) {
+                  return {
+                    ...m,
+                    id: message.id,
+                  };
+                }
+                return m;
+              });
             });
-          });
-        } else {
-          set(messagesAtom, (prev) => {
-            return prev.map((m) => {
-              if (m.id === initialID) {
-                return {
-                  ...m,
-                  id: message.id,
-                };
-              }
-              return m;
+          } else {
+            set(messagesAtom, (prev) => {
+              return prev.map((m) => {
+                if (m.id === initialID) {
+                  return {
+                    ...m,
+                    id: message.id,
+                  };
+                }
+                return m;
+              });
             });
-          });
+          }
         }
       }
-    }
-    // Regenerate
-    else {
-      const instertedMessages = await addMessagetoSupabase([finalAIMessage!]);
-      // Change the dummy IDs with the real ones
-      if (!instertedMessages) {
-        console.log("No inserted messages found");
-        return;
-      }
-      set(messagesAtom, (prev) => {
-        return prev.map((m) => {
-          if (m.id === initialID) {
-            return {
-              ...m,
-              id: instertedMessages[0].id,
-            };
-          }
-          return m;
+      // Regenerate
+      else {
+        const instertedMessages = await addMessagetoSupabase([finalAIMessage!]);
+        // Change the dummy IDs with the real ones
+        if (!instertedMessages) {
+          console.log("No inserted messages found");
+          return;
+        }
+        set(messagesAtom, (prev) => {
+          return prev.map((m) => {
+            if (m.id === initialID) {
+              return {
+                ...m,
+                id: instertedMessages[0].id,
+              };
+            }
+            return m;
+          });
         });
-      });
+      }
     }
 
-    // If chat is new, update the chat title
-    const isChatNew = get(messagesAtom).length === 2;
-    if (isChatNew) {
-      const response = await fetch("/api/openai/chat-title", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: get(messagesAtom).map((message) => {
-            return {
-              content: message.content,
-              role: message.role,
-            };
-          }),
-          chatID: get(chatIDAtom),
-        }),
-      });
-      const { title } = await response.json();
-      set(chatsAtom, (prev) => {
-        return prev.map((c) => {
-          if (c.id === get(chatIDAtom)) {
-            return {
-              ...c,
-              title,
-            };
+    /* 3) Change Conversation Title */
+    if (action === "generate") {
+      try {
+        // If chat is new, update the chat title
+        const isChatNew = get(messagesAtom).length === 2;
+        if (isChatNew) {
+          const response = await fetch("/api/openai/chat-title", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              messages: get(messagesAtom).map((message) => {
+                return {
+                  content: message.content,
+                  role: message.role,
+                };
+              }),
+              chatID: get(chatIDAtom),
+              apiKey: get(openAIAPIKeyAtom),
+            }),
+          });
+          const { title } = await response.json();
+          if (title) {
+            set(chatsAtom, (prev) => {
+              return prev.map((c) => {
+                if (c.id === get(chatIDAtom)) {
+                  return {
+                    ...c,
+                    title,
+                  };
+                }
+                return c;
+              });
+            });
           }
-          return c;
-        });
-      });
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
 );
