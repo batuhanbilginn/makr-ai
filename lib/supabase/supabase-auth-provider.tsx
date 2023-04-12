@@ -64,14 +64,6 @@ export default function SupabaseAuthProvider({
 
   // Sign-In with Github
   const signInWithGithub = async () => {
-    console.log(process.env.NEXT_PUBLIC_VERCEL_ENV);
-    console.log(
-      "Redirect to:" + process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
-        ? "https://ai.makr.dev/chat"
-        : process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
-        ? "https://preview-ai.makr.dev/chat"
-        : "http://localhost:3000/chat"
-    );
     await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
