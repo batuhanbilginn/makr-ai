@@ -1,6 +1,8 @@
 import { ChatWithMessageCountAndSettings, MessageT } from "@/types/collections";
 import {
   ChatGPTMessage,
+  OpenAIKeyOptional,
+  OpenAIKeyRequired,
   OpenAISettings,
   OpenAIStreamPayload,
 } from "@/types/openai";
@@ -9,6 +11,29 @@ import { createRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 export const defaultSystemPropmt = `You are makr.AI, a large language model trained by OpenAI.`;
+
+// To hold OpenAI API Key (Not Exported)
+const openAIAPIKeyAtom = atom<string>("");
+
+// To control OpenAI API Key (Set and Delete)
+export const openAPIKeyHandlerAtom = atom(
+  (get) => get(openAIAPIKeyAtom),
+  (_get, set, payload: OpenAIKeyOptional | OpenAIKeyRequired) => {
+    if (payload.action === "remove") {
+      set(openAIAPIKeyAtom, "");
+      localStorage.removeItem("openai-api-key");
+    } else if (payload.action === "set") {
+      set(openAIAPIKeyAtom, payload.key);
+      localStorage.setItem("openai-api-key", payload.key);
+    } else if (payload.action === "get") {
+      // Check ENV first
+      const localKey = localStorage.getItem("openai-api-key");
+      if (localKey) {
+        set(openAIAPIKeyAtom, localKey);
+      }
+    }
+  }
+);
 
 // To control OpenAI Settings when starting new chat (New Chat Component)
 export const openAISettingsAtom = atom<OpenAISettings>({
@@ -29,6 +54,7 @@ export const openAISettingsAtom = atom<OpenAISettings>({
 const openAIPayload = atom<OpenAIStreamPayload>((get) => {
   const currentChat = get(currentChatAtom);
   return {
+    apiKey: get(openAIAPIKeyAtom),
     model: currentChat?.model ?? "gpt-3.5-turbo",
     messages: [
       {
@@ -89,8 +115,14 @@ export const addMessageAtom = atom(
     const inputValue = get(inputAtom);
     const isHandlig = get(handlingAtom);
     const chatID = get(chatIDAtom);
+    const apiKey = get(openAIAPIKeyAtom);
     // Early Returns
-    if (isHandlig || (inputValue.length < 2 && action !== "regenerate")) return;
+    if (
+      isHandlig ||
+      (inputValue.length < 2 && action !== "regenerate") ||
+      !apiKey
+    )
+      return;
 
     // Build User's Message Object in Function Scope - We need to use it in multiple places
     const userMessage: MessageT = {

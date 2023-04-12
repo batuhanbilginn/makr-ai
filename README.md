@@ -26,67 +26,63 @@ Host your own live version of Chatbot UI with Vercel.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/batuhanbilginn/makr-ai)
 
-**Replit**
-
-Fork Chatbot UI on Replit [here](https://replit.com/@MckayWrigley/chatbot-ui-pro?v=1).
-
 ## Running Locally
 
-**1. Clone Repo**
+**1. Create a Supabase Project**
+The application holds conversations in a Supabase database. You can create a free account [here](https://supabase.io/).
+
+makr.AI needs a Supabase URL and Anon Key to connect to your database. You can find these in your Supabase project settings.
+
+You must create 3 tables in your supabase project:
+
+- chats
+- messages
+- profiles
+
+In order to learn more about this you can check this [tutorial](https://youtu.be/yrXLvCB0ByA).
+
+**2. Clone The Repo**
 
 ```bash
-git clone https://github.com/mckaywrigley/chatbot-ui.git
+git clone https://github.com/batuhanbilginn/makr-ai.git
 ```
 
-**2. Install Dependencies**
+**3. Install Dependencies**
 
 ```bash
-npm i
+yarn install
 ```
 
-**3. Provide OpenAI API Key**
+**4. Create Your Enviroment Variables**
 
-Create a .env.local file in the root of the repo with your OpenAI API Key:
+Create your .env.local file in the root of the repo with your OpenAI API Key, Supabase URL and Supabase Anon Key:
 
 ```bash
 OPENAI_API_KEY=YOUR_KEY
+NEXT_PUBLIC_SUPABASE_URL=YOUR_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_KEY
 ```
 
-> You can set `OPENAI_API_HOST` where access to the official OpenAI host is restricted or unavailable, allowing users to configure an alternative host for their specific needs.
-
-> Additionally, if you have multiple OpenAI Organizations, you can set `OPENAI_ORGANIZATION` to specify one.
-
-**4. Run App**
+**4. Run Development Server**
 
 ```bash
-npm run dev
+yarn dev
 ```
-
-**5. Use It**
-
-You should be able to start chatting.
 
 ## Configuration
 
 When deploying the application, the following environment variables can be set:
 
-| Environment Variable  | Default value                  | Description                                                                 |
-| --------------------- | ------------------------------ | --------------------------------------------------------------------------- |
-| OPENAI_API_KEY        |                                | The default API key used for authentication with OpenAI                     |
-| OPENAI_API_HOST       | `https://api.openai.com`       | The base url, for Azure use `https://<endpoint>.openai.azure.com`           |
-| OPENAI_API_TYPE       | `openai`                       | The API type, options are `openai` or `azure`                               |
-| OPENAI_API_VERSION    | `2023-03-15-preview`           | Only applicable for Azure OpenAI                                            |
-| OPENAI_ORGANIZATION   |                                | Your OpenAI organization ID                                                 |
-| DEFAULT_MODEL         | `gpt-3.5-turbo`                | The default model to use on new conversations, for Azure use `gpt-35-turbo` |
-| DEFAULT_SYSTEM_PROMPT | [see here](utils/app/const.ts) | The default system prompt to use on new conversations                       |
-| GOOGLE_API_KEY        |                                | See [Custom Search JSON API documentation][gcse]                            |
-| GOOGLE_CSE_ID         |                                | See [Custom Search JSON API documentation][gcse]                            |
+| Environment Variable          | Default value | Description                            |
+| ----------------------------- | ------------- | -------------------------------------- |
+| OPENAI_API_KEY                | -             | Your OpenAI API Key                    |
+| NEXT_PUBLIC_SUPABASE_URL      | -             | The base url of your Supabase Project  |
+| NEXT_PUBLIC_SUPABASE_ANON_KEY | -             | The Anon Key for your Supabase Project |
 
-If you do not provide an OpenAI API key with `OPENAI_API_KEY`, users will have to provide their own key.
+|
+
 If you don't have an OpenAI API key, you can get one [here](https://platform.openai.com/account/api-keys).
 
 ## Contact
 
-If you have any questions, feel free to reach out to me on [Twitter](https://twitter.com/mckaywrigley).
-
-[gcse]: https://developers.google.com/custom-search/v1/overview
+If you have any questions, feel free to reach out to me on [Twitter](https://twitter.com/makrdev).

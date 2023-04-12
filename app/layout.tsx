@@ -7,6 +7,7 @@ export const metadata = {
 };
 
 import JotaiProvider from "@/components/providers/jotai-provider";
+import OpenAIKeyProvider from "@/components/providers/openai-key-provider";
 import { ThemeProviderClient } from "@/components/providers/theme-provider";
 import SupabaseAuthProvider from "@/lib/supabase/supabase-auth-provider";
 import SupabaseProvider from "@/lib/supabase/supabase-provider";
@@ -31,7 +32,9 @@ export default async function RootLayout({
         <SupabaseProvider>
           <SupabaseAuthProvider serverSession={session}>
             <ThemeProviderClient>
-              <JotaiProvider>{children}</JotaiProvider>
+              <JotaiProvider>
+                <OpenAIKeyProvider>{children}</OpenAIKeyProvider>
+              </JotaiProvider>
             </ThemeProviderClient>
           </SupabaseAuthProvider>
         </SupabaseProvider>
