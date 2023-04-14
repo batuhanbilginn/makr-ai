@@ -68,25 +68,34 @@ export interface Database {
           chat: string | null
           content: string | null
           created_at: string | null
+          embedding: string | null
           id: string
           owner: string | null
+          pair: string | null
           role: string | null
+          token_size: number | null
         }
         Insert: {
           chat?: string | null
           content?: string | null
           created_at?: string | null
+          embedding?: string | null
           id?: string
           owner?: string | null
+          pair?: string | null
           role?: string | null
+          token_size?: number | null
         }
         Update: {
           chat?: string | null
           content?: string | null
           created_at?: string | null
+          embedding?: string | null
           id?: string
           owner?: string | null
+          pair?: string | null
           role?: string | null
+          token_size?: number | null
         }
       }
       profiles: {
@@ -114,7 +123,97 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      ivfflathandler: {
+        Args: {
+          "": unknown
+        }
+        Returns: unknown
+      }
+      search_messages:
+        | {
+            Args: {
+              query_embedding: string
+              similarity_threshold: number
+              match_count: number
+            }
+            Returns: {
+              id: string
+              content: string
+              role: string
+              created_at: string
+              token_size: number
+              similarity: number
+            }[]
+          }
+        | {
+            Args: {
+              query_embedding: string
+              similarity_threshold: number
+              match_count: number
+              chat_id?: string
+            }
+            Returns: {
+              id: string
+              content: string
+              role: string
+              created_at: string
+              token_size: number
+              similarity: number
+            }[]
+          }
+        | {
+            Args: {
+              query_embedding: string
+              similarity_threshold: number
+              match_count: number
+              owner_id: string
+              chat_id?: string
+            }
+            Returns: {
+              id: string
+              content: string
+              role: string
+              created_at: string
+              token_size: number
+              similarity: number
+            }[]
+          }
+      vector_avg: {
+        Args: {
+          "": number[]
+        }
+        Returns: string
+      }
+      vector_dims: {
+        Args: {
+          "": string
+        }
+        Returns: number
+      }
+      vector_norm: {
+        Args: {
+          "": string
+        }
+        Returns: number
+      }
+      vector_out: {
+        Args: {
+          "": string
+        }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: {
+          "": string
+        }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: {
+          "": unknown[]
+        }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

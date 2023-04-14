@@ -30,11 +30,11 @@ export default async function RootLayout({
     <html suppressHydrationWarning lang="en">
       <body className={inter.className}>
         <SupabaseProvider>
-          <SupabaseAuthProvider serverSession={session}>
-            <ThemeProviderClient>
-              <JotaiProvider>{children}</JotaiProvider>
-            </ThemeProviderClient>
-          </SupabaseAuthProvider>
+          <JotaiProvider>
+            <SupabaseAuthProvider serverSession={session}>
+              <ThemeProviderClient>{children}</ThemeProviderClient>
+            </SupabaseAuthProvider>
+          </JotaiProvider>
         </SupabaseProvider>
       </body>
     </html>

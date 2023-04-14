@@ -18,7 +18,8 @@ const ChatPage = async ({
     .from("messages")
     .select("*")
     .eq("chat", id)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .order("role", { ascending: false });
 
   // Check if the chat exists, if not, return 404
   const { data: currentChat } = await supabase

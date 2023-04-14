@@ -89,7 +89,7 @@ const ChatInput = () => {
         {/* Input Container */}
         <form
           onSubmit={handleSubmit}
-          className="flex items-center w-full py-2 bg-white rounded-md shadow-sm focus-within:outline focus-within:outline-neutral-300 dark:focus-within:outline-neutral-500 focus-within:outline-1 dark:bg-neutral-900"
+          className="flex items-center w-full py-2 bg-white rounded-md shadow-sm focus-within:ring-neutral-300 dark:focus-within:ring-neutral-500 focus-within:ring-1 dark:bg-neutral-900"
         >
           <Textarea
             className="h-auto peer"

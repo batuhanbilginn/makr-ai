@@ -16,24 +16,37 @@
     @apply mt-3 first:mt-0;
   }
   .markdown ol {
-    @apply my-3 list-decimal;
-  }
-  .markdown li {
-    @apply my-2;
+    @apply flex flex-col gap-5 pl-4 my-3 list-decimal;
   }
   .markdown ul {
-    @apply my-3 list-disc;
+    @apply flex flex-col gap-5 pl-4 my-3 list-disc;
   }
   .markdown h2 {
-    @apply mt-6 mb-2 text-2xl font-semibold;
+    @apply mt-4 mb-2 text-2xl font-semibold;
   }
   .markdown h3 {
-    @apply mt-6 mb-2 text-xl font-semibold;
+    @apply mt-4 mb-2 text-xl font-semibold;
   }
   .markdown h4 {
-    @apply mt-6 mb-2 text-lg font-medium;
+    @apply mt-4 mb-2 text-lg font-medium;
   }
   .markdown h5 {
-    @apply mt-6 mb-2 text-base font-medium;
+    @apply mt-4 mb-2 text-base font-medium;
+  }
+  .markdown table {
+    @apply w-full my-6 overflow-hidden text-left rounded-md table-auto;
+  }
+  .markdown table thead {
+    @apply text-sm font-medium uppercase border-b border-neutral-200 dark:border-neutral-400 bg-neutral-50 dark:bg-neutral-700;
+  }
+  .markdown table thead th {
+    @apply px-4 py-3;
+  }
+  .markdown table tbody tr {
+    @apply text-sm border-b dark:border-neutral-600 border-neutral-300 last:border-none even:bg-neutral-100 odd:bg-neutral-200 even:dark:bg-neutral-700 odd:dark:bg-neutral-800;
+  }
+
+  .markdown table tbody tr td {
+    @apply px-4 py-3;
   }
 }

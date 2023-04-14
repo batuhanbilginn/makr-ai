@@ -1,12 +1,13 @@
 import { MessageT } from "@/types/collections";
 
 import { useAuth } from "@/lib/supabase/supabase-auth-provider";
-import "highlight.js/styles/github-dark.css";
+import "highlight.js/styles/github-dark-dimmed.css";
 import { Clipboard } from "lucide-react";
 import { useRef } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
+import remarkGfm from "remark-gfm";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const Message = ({ message }: { message: MessageT }) => {
@@ -24,7 +25,7 @@ const Message = ({ message }: { message: MessageT }) => {
       {/* Container */}
       <div className="flex w-full max-w-3xl gap-4 px-4 py-10 mx-auto sm:px-8">
         {/* Avatar */}
-        <Avatar className="ring-2 ring-offset-2 dark:ring-neutral-700 ring-neutral-400">
+        <Avatar className="w-8 h-8 ring-2 ring-offset-2 dark:ring-neutral-700 ring-neutral-400">
           <AvatarImage
             src={
               !isAssistant
@@ -35,23 +36,23 @@ const Message = ({ message }: { message: MessageT }) => {
           <AvatarFallback>{!isAssistant ? "YOU" : "AI"}</AvatarFallback>
         </Avatar>
         {/* Message */}
-        <div className="w-full max-w-full mt-2">
+        <div className="w-[calc(100%-50px)]">
           {!isAssistant || message.content !== "" ? (
             <ReactMarkdown
-              className="markdown"
+              className="break-words markdown"
               components={{
                 code: ({ children, inline, className }) => {
                   const language = className?.split("-")[1];
                   if (inline)
                     return (
-                      <span className="px-2 py-1 text-sm rounded-md dark:bg-neutral-800">
+                      <span className="px-2 py-1 text-sm rounded-md dark:bg-neutral-800 bg-neutral-50">
                         {children}
                       </span>
                     );
                   return (
-                    <div className="w-full my-4">
+                    <div className="w-full my-5 overflow-hidden rounded-md">
                       {/* Code Title */}
-                      <div className="bg-[#0d111780] rounded-t-md py-2 px-3 text-xs flex items-center justify-between">
+                      <div className="dark:bg-[#0d111780] bg-neutral-50 py-2 px-3 text-xs flex items-center justify-between">
                         <div>{language ?? "javascript"}</div>
                         {/* Copy code to the clipboard */}
                         <CopyToClipboard
@@ -63,12 +64,12 @@ const Message = ({ message }: { message: MessageT }) => {
                           </button>
                         </CopyToClipboard>
                       </div>
+                      {/* Code Block */}
                       <code
                         ref={codeRef}
                         className={
-                          className ??
-                          "hljs language-javascript" +
-                            " rounded-b-md overflow-x-scroll"
+                          (className ?? "hljs language-javascript") +
+                          " !whitespace-pre"
                         }
                       >
                         {children}
@@ -78,6 +79,7 @@ const Message = ({ message }: { message: MessageT }) => {
                 },
               }}
               rehypePlugins={[rehypeHighlight]}
+              remarkPlugins={[remarkGfm]}
             >
               {message.content ?? ""}
             </ReactMarkdown>
