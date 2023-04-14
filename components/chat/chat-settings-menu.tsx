@@ -10,7 +10,7 @@ import { useAtom, useAtomValue } from "jotai";
 import debounce from "lodash.debounce";
 import { Info } from "lucide-react";
 
-import { titleCase } from "@/utils/helpers";
+import { dottedNumber, titleCase } from "@/utils/helpers";
 import { useCallback, useMemo } from "react";
 import {
   Dialog,
@@ -82,7 +82,7 @@ const ChatSettingsMenu = () => {
           </div>
           <div className="px-2 py-1 bg-white rounded-md shadow-sm dark:bg-neutral-900">
             <span className=" text-neutral-400">Token Size: </span>
-            {tokenCounts.currentChatToken}
+            {dottedNumber(tokenCounts.currentChatToken)}
           </div>
           <div className="px-2 py-1 bg-white rounded-md shadow-sm dark:bg-neutral-900">
             <span className=" text-neutral-400">History Type: </span>

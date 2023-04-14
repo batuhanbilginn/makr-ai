@@ -7,3 +7,8 @@ export const titleCase = (str: string): string => {
     })
     .join(" ");
 };
+
+// Put dot every 3 digits
+export const dottedNumber = (num: number): string => {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};

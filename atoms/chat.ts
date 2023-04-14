@@ -280,13 +280,20 @@ export const addMessageAtom = atom(
     const tokenSizeLimitExceeded = get(tokenSizeLimitAtom);
 
     if (tokenSizeLimitExceeded || get(historyTypeAtom) === "global") {
+      // Get User's Message
+      const lastUsersMessage =
+        action === "generate"
+          ? userMessage
+          : (get(messagesAtom).findLast(
+              (message) => message.role === "user"
+            ) as MessageT);
       // Get Embeddings for the User's Message
       const embeddingResponse = await fetch("/api/openai/embedding", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ messages: [userMessage], apiKey }),
+        body: JSON.stringify({ messages: [lastUsersMessage], apiKey }),
       });
 
       const embeddings = await embeddingResponse.json();
