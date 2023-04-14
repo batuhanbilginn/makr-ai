@@ -6,10 +6,16 @@ import {
   OpenAISettings,
   OpenAIStreamPayload,
 } from "@/types/openai";
+import { encode } from "@nem035/gpt-3-encoder";
 import { atom } from "jotai";
 import { createRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 
+// Current Prices of GPT Models per 1000 tokens
+const modelPrices = {
+  "gpt-3.5-turbo": 0.002 / 1000,
+  "gpt-4": 0.03 / 1000,
+};
 export const defaultSystemPropmt = `You are makr.AI, a large language model trained by OpenAI.`;
 
 // To hold OpenAI API Key (Not Exported)
@@ -53,6 +59,22 @@ export const openAISettingsAtom = atom<OpenAISettings>({
 // To combine all settings and messages in a state for sending new message (Read Only)
 const openAIPayload = atom<OpenAIStreamPayload>((get) => {
   const currentChat = get(currentChatAtom);
+  // Check if global history is enabled
+  const isGlobal = get(historyTypeAtom) === "global" || get(tokenSizeLimitAtom);
+  // Remove the empty assitant message before sending
+  const removedEmptyAsistantMessage = [...get(messagesAtom)].filter(
+    (message) => message.content !== ""
+  );
+
+  const history = !isGlobal
+    ? removedEmptyAsistantMessage
+    : [...removedEmptyAsistantMessage].pop() !== null
+    ? [
+        ...get(vectorMessageHistoryAtom),
+        [...removedEmptyAsistantMessage].pop() as MessageT,
+      ]
+    : get(vectorMessageHistoryAtom);
+
   return {
     apiKey: get(openAIAPIKeyAtom),
     model: currentChat?.model ?? "gpt-3.5-turbo",
@@ -63,7 +85,7 @@ const openAIPayload = atom<OpenAIStreamPayload>((get) => {
           `Answer as concisely as possible and ALWAYS answer in MARKDOWN. Current date: ${new Date()}`,
         role: "system",
       },
-      ...get(messagesAtom).map(
+      ...history.map(
         (m) =>
           ({
             content: m.content as string,
@@ -82,6 +104,7 @@ export const chatboxRefAtom = atom(createRef<HTMLDivElement>());
 // Chat Input
 export const inputAtom = atom<string>("");
 
+export const ownerIDAtom = atom<string>("");
 // Where we keep current chat ID - (Read Only)
 export const chatIDAtom = atom<string>((get) => get(currentChatAtom)?.id ?? "");
 // Where we keep current chat
@@ -95,6 +118,34 @@ export const messagesAtom = atom<MessageT[]>([]);
 export const currentChatHasMessagesAtom = atom<boolean>(
   (get) => get(messagesAtom).length > 0
 );
+
+// Token Calculations
+export const tokenCountAtom = atom((get) => {
+  const currentModel = get(currentChatAtom)?.model ?? "gpt-3.5-turbo";
+  const currentMessage = get(inputAtom);
+
+  const currentMessageToken = encode(currentMessage).length;
+  const currentMessagePrice =
+    currentMessageToken * modelPrices[currentModel] + "$";
+  const currentChatToken =
+    get(messagesAtom).reduce((curr, arr) => {
+      return curr + encode(arr.content as string).length;
+    }, 0) + currentMessageToken;
+  const currentChatPrice = currentChatToken * modelPrices[currentModel] + "$";
+
+  return {
+    currentMessageToken,
+    currentMessagePrice,
+    currentChatToken,
+    currentChatPrice,
+  };
+});
+
+export const tokenSizeLimitAtom = atom(
+  (get) => get(tokenCountAtom).currentChatToken >= 200
+);
+export const historyTypeAtom = atom<"global" | "chat">("global");
+const vectorMessageHistoryAtom = atom<MessageT[]>([]);
 
 // Abort Controller for OpenAI Stream
 const abortControllerAtom = atom<AbortController>(new AbortController());
@@ -113,6 +164,7 @@ export const addMessageAtom = atom(
   (get) => get(handlingAtom),
   async (get, set, action: "generate" | "regenerate" = "generate") => {
     const inputValue = get(inputAtom);
+    const token_size = get(tokenCountAtom).currentMessageToken;
     const isHandlig = get(handlingAtom);
     const chatID = get(chatIDAtom);
     const apiKey = get(openAIAPIKeyAtom);
@@ -133,11 +185,28 @@ export const addMessageAtom = atom(
       id: uuidv4(),
       created_at: String(new Date()),
       owner: "",
+      embedding: "",
+      token_size,
+      pair: "",
     };
 
     // Add to Supabase Handler
-    const addMessagetoSupabase = async (messages: MessageT[]) => {
+    const addMessagetoSupabase = async (
+      messages: MessageT[],
+      apiKey: string
+    ) => {
       try {
+        // Get Embeddings for the messages
+        const embeddingResponse = await fetch("/api/openai/embedding", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ messages, apiKey }),
+        });
+
+        const embeddings = await embeddingResponse.json();
+
         // Add message to the Supabase
         const response = await fetch("/api/supabase/message", {
           method: "POST",
@@ -145,7 +214,12 @@ export const addMessageAtom = atom(
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            messages,
+            messages: messages.map((m, i) => {
+              return {
+                ...m,
+                embedding: embeddings[i].embedding,
+              };
+            }),
           }),
         });
         if (!response.ok) throw new Error("Failed to add message to Supabase");
@@ -192,12 +266,51 @@ export const addMessageAtom = atom(
           created_at: String(new Date()),
           chat: chatID!!,
           owner: "",
+          embedding: "",
+          token_size: 0,
+          pair: "",
         },
       ];
     });
 
     // Scroll down after insert
     scrollDown();
+
+    // Check If Token Size is over 4000
+    const tokenSizeLimitExceeded = get(tokenSizeLimitAtom);
+
+    if (tokenSizeLimitExceeded || get(historyTypeAtom) === "global") {
+      // Get Embeddings for the User's Message
+      const embeddingResponse = await fetch("/api/openai/embedding", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ messages: [userMessage], apiKey }),
+      });
+
+      const embeddings = await embeddingResponse.json();
+      // Get history from Supabase
+      const response = await fetch("/api/supabase/history", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query_embedding: embeddings[0].embedding,
+          chat_id: get(historyTypeAtom) === "global" ? null : chatID,
+          match_count: 20,
+          similarity_threshold: 0.6,
+          owner_id: get(ownerIDAtom),
+        }),
+      });
+      const history = await response.json();
+
+      if (history) {
+        // Set the state
+        set(vectorMessageHistoryAtom, history);
+      }
+    }
 
     // Response Fetcher and Stream Handler
     try {
@@ -241,6 +354,8 @@ export const addMessageAtom = atom(
             {
               ...responseMessage,
               content: responseMessage?.content + chunkValue,
+              token_size:
+                (responseMessage?.token_size ?? 0) + encode(chunkValue).length,
             },
           ];
         });
@@ -250,7 +365,8 @@ export const addMessageAtom = atom(
       }
     } catch (error) {
       console.log(error);
-      // Set Error Message into the State
+      // Set Error Message into the State If it's not aborted
+      if (error !== "DOMException: The user aborted a request.") return;
       set(messagesAtom, (prev) => {
         const responseMessage = prev.find((m) => m.id === initialID);
         if (!responseMessage) {
@@ -274,12 +390,16 @@ export const addMessageAtom = atom(
       ) as MessageT;
       if (action === "generate") {
         const instertedMessages = await addMessagetoSupabase(
-          finalAIMessage ? [userMessage, finalAIMessage] : [userMessage]
+          finalAIMessage ? [userMessage, finalAIMessage] : [userMessage],
+          apiKey
         );
+
+        let lastUserMessageID = "";
 
         for (const message of instertedMessages) {
           if (message.role === "user") {
             set(messagesAtom, (prev) => {
+              lastUserMessageID = message.id;
               return prev.map((m) => {
                 if (m.id === userMessage.id) {
                   return {
@@ -302,17 +422,42 @@ export const addMessageAtom = atom(
                 return m;
               });
             });
+
+            // Set PairID to the Assistant Message
+            if (lastUserMessageID) {
+              try {
+                await fetch("/api/supabase/pair", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    messageID: message.id,
+                    pairID: lastUserMessageID,
+                  }),
+                });
+              } catch (error) {
+                console.log(error);
+              }
+            }
           }
         }
       }
       // Regenerate
       else {
-        const instertedMessages = await addMessagetoSupabase([finalAIMessage!]);
+        const instertedMessages = await addMessagetoSupabase(
+          [finalAIMessage!],
+          apiKey
+        );
         // Change the dummy IDs with the real ones
         if (!instertedMessages) {
           console.log("No inserted messages found");
           return;
         }
+        // Get last user's message ID
+        const lastUserMessageID = get(messagesAtom).findLast(
+          (message) => message.role === "user"
+        )?.id;
         set(messagesAtom, (prev) => {
           return prev.map((m) => {
             if (m.id === initialID) {
@@ -324,6 +469,24 @@ export const addMessageAtom = atom(
             return m;
           });
         });
+
+        // Set PairID to the Assistant Message
+        if (lastUserMessageID) {
+          try {
+            await fetch("/api/supabase/pair", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                messageID: instertedMessages[0].id,
+                pairID: lastUserMessageID,
+              }),
+            });
+          } catch (error) {
+            console.log(error);
+          }
+        }
       }
     }
 

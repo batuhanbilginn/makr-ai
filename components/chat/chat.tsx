@@ -1,5 +1,6 @@
 import { mobileMenuAtom } from "@/atoms/navigation";
 import { ChatWithMessageCountAndSettings } from "@/types/collections";
+import { titleCase } from "@/utils/helpers";
 import { useSetAtom } from "jotai";
 import { MessageCircle, MessageSquare } from "lucide-react";
 import { DateTime } from "luxon";
@@ -22,7 +23,9 @@ const Chat = ({ chat }: { chat: ChatWithMessageCountAndSettings }) => {
       {/* Meta */}
       <div className="flex items-center mt-1 dark:text-neutral-600 text-neutral-400">
         <div className="text-xs">
-          {DateTime.fromISO(chat.created_at as string).toRelativeCalendar()}
+          {titleCase(
+            DateTime.fromISO(chat.created_at as string).toRelativeCalendar()!!
+          )}
         </div>
         <div className="w-1 h-1 mx-2 rounded-full dark:bg-neutral-700 bg-neutral-500" />
         <div className="flex items-center gap-1 text-xs">

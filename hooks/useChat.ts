@@ -39,7 +39,6 @@ const useChat = ({
   // Send First Message if it's a new chat
   useEffect(() => {
     if (isChatNew && chatID) {
-      console.log('Running "isChatNew"');
       addMessageHandler("generate").then(async () => {
         writableParams.delete("new");
         router.replace(`/chat/${chatID}`);

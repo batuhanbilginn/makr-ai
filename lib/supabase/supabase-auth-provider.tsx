@@ -1,7 +1,9 @@
 "use client";
 
+import { ownerIDAtom } from "@/atoms/chat";
 import { ProfileT } from "@/types/collections";
 import { Session } from "@supabase/supabase-js";
+import { useSetAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect } from "react";
 import useSWR from "swr";
@@ -32,6 +34,7 @@ export default function SupabaseAuthProvider({
 }) {
   const { supabase } = useSupabase();
   const router = useRouter();
+  const setOwnerID = useSetAtom(ownerIDAtom);
 
   // Get USER
   const getUser = async () => {
@@ -76,6 +79,13 @@ export default function SupabaseAuthProvider({
       },
     });
   };
+
+  // Set Owner ID
+  useEffect(() => {
+    if (user) {
+      setOwnerID(user.id);
+    }
+  }, [setOwnerID, user]);
 
   // Refresh the Page to Sync Server and Client
   useEffect(() => {

@@ -30,6 +30,8 @@ export async function POST(req: Request): Promise<Response> {
           content: message.content,
           role: message.role,
           owner: session?.user?.id,
+          embedding: message.embedding,
+          token_size: message.token_size,
         };
       })
     )

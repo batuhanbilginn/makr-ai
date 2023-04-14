@@ -21,6 +21,8 @@ export async function POST(req: Request): Promise<Response> {
     return new Response("No payload!", { status: 400 });
   }
 
+  console.log(payload.messages);
+
   const stream = await OpenAIStream(payload);
   return new Response(stream);
 }
