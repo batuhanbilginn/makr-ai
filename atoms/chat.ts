@@ -142,7 +142,7 @@ export const tokenCountAtom = atom((get) => {
 });
 
 export const tokenSizeLimitAtom = atom(
-  (get) => get(tokenCountAtom).currentChatToken >= 200
+  (get) => get(tokenCountAtom).currentChatToken >= 4000
 );
 export const historyTypeAtom = atom<"global" | "chat">("global");
 const vectorMessageHistoryAtom = atom<MessageT[]>([]);

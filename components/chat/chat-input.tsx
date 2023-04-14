@@ -7,7 +7,6 @@ import {
   currentChatHasMessagesAtom,
   inputAtom,
   regenerateHandlerAtom,
-  tokenCountAtom,
 } from "@/atoms/chat";
 import useChats from "@/hooks/useChats";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
@@ -25,7 +24,6 @@ const ChatInput = () => {
   const hasChatMessages = useAtomValue(currentChatHasMessagesAtom);
   const cancelHandler = useSetAtom(cancelHandlerAtom);
   const chatID = useAtomValue(chatIDAtom);
-  const tokenCounts = useAtomValue(tokenCountAtom);
 
   // Handle Submit
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

@@ -1,10 +1,16 @@
 "use client";
-import { currentChatAtom, defaultSystemPropmt } from "@/atoms/chat";
+import {
+  currentChatAtom,
+  defaultSystemPropmt,
+  historyTypeAtom,
+  tokenCountAtom,
+} from "@/atoms/chat";
 import { useSupabase } from "@/lib/supabase/supabase-provider";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import debounce from "lodash.debounce";
 import { Info } from "lucide-react";
 
+import { titleCase } from "@/utils/helpers";
 import { useCallback, useMemo } from "react";
 import {
   Dialog,
@@ -25,6 +31,8 @@ import { TextareaDefault } from "../ui/textarea-default";
 const ChatSettingsMenu = () => {
   const { supabase } = useSupabase();
   const [currentChat, setCurrentChat] = useAtom(currentChatAtom);
+  const tokenCounts = useAtomValue(tokenCountAtom);
+  const [historyType, setHistoryType] = useAtom(historyTypeAtom);
 
   // Send system prompt to supabase
   const sendSupabase = useCallback(
@@ -61,7 +69,7 @@ const ChatSettingsMenu = () => {
   return (
     <div>
       <Dialog>
-        <DialogTrigger className="flex items-center gap-4 pt-2 pb-4 text-xs">
+        <DialogTrigger className="flex items-center max-w-full gap-4 pt-2 pb-4 overflow-x-auto text-xs whitespace-nowrap">
           <div className="px-2 py-1 bg-white rounded-md dark:bg-neutral-900">
             <span className=" text-neutral-400">Model: </span>
             {currentChat?.model === "gpt-3.5-turbo" ? "GPT-3.5 Turbo" : "GPT-4"}
@@ -71,6 +79,14 @@ const ChatSettingsMenu = () => {
             {currentChat?.system_prompt === defaultSystemPropmt
               ? "Default"
               : "Custom"}
+          </div>
+          <div className="px-2 py-1 bg-white rounded-md shadow-sm dark:bg-neutral-900">
+            <span className=" text-neutral-400">Token Size: </span>
+            {tokenCounts.currentChatToken}
+          </div>
+          <div className="px-2 py-1 bg-white rounded-md shadow-sm dark:bg-neutral-900">
+            <span className=" text-neutral-400">History Type: </span>
+            {titleCase(historyType)}
           </div>
         </DialogTrigger>
         <DialogContent>
@@ -112,6 +128,23 @@ const ChatSettingsMenu = () => {
                 </div>
               </div>
             )}
+            <div className="mt-6">
+              <Label>History Type</Label>
+              <Select
+                onValueChange={(value: "global" | "chat") => {
+                  setHistoryType(value);
+                }}
+                value={historyType}
+              >
+                <SelectTrigger className="w-full mt-3">
+                  <SelectValue placeholder="Select a model." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={"global"}>Global</SelectItem>
+                  <SelectItem value={"chat"}>Chat</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="mt-6">
               <div className="flex items-center justify-between w-full">
                 <Label>System Propmt</Label>
