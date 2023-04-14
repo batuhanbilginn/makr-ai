@@ -2,7 +2,7 @@
 
 makr.AI is a ChatGPT clone with enhanced features for makers & indie hackers built on top of using Next.js, TypeScript, Supabase, Jotai and Tailwind CSS.
 
-![Chatbot UI](./public/readme-hero.jpg)
+![makr.AI](./public/readme-hero.jpg)
 
 Check this [Youtube video](https://youtu.be/yrXLvCB0ByA) to learn more.
 
@@ -12,7 +12,7 @@ I'll be building new features over time. If you have any suggestions, feel free 
 
 **What to expect:**
 
-- [ ] Long-term Memory for Conversations (Supabase's Vector Database)
+- [x] Long-term Memory for Conversations (Supabase's Vector Database) - 14.04.23
 - [ ] Propmt Library
 - [ ] Organising Conversations with Folders etc.
 - [ ] Collections Library for saving responses
@@ -35,9 +35,7 @@ makr.AI needs a Supabase URL and Anon Key to connect to your database. You can f
 
 You must create 3 tables in your supabase project:
 
-- chats
-- messages
-- profiles
+![makr.AI](./public/supbase_schema.png)
 
 In order to learn more about this you can check this [tutorial](https://youtu.be/yrXLvCB0ByA).
 
