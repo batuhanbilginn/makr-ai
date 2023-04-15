@@ -10,8 +10,9 @@ export type ProfileT = Database["public"]["Tables"]["profiles"]["Row"];
 export type ChatT = Database["public"]["Tables"]["chats"]["Row"];
 export type MessageT = Database["public"]["Tables"]["messages"]["Row"];
 export interface ChatWithMessageCountAndSettings
-  extends Omit<ChatT, "advanced_settings" | "model">,
+  extends Omit<ChatT, "advanced_settings" | "model" | "history_type">,
     Omit<OpenAISettings, "system_prompt"> {
   messages: [{ count: number }];
   advanced_settings: OpenAISettings["advanced_settings"];
+  history_type: "chat" | "global";
 }

@@ -48,6 +48,7 @@ const useChats = () => {
         model: openAISettings.model,
         system_prompt: openAISettings.system_prompt,
         advanced_settings: JSON.stringify(openAISettings.advanced_settings),
+        history_type: openAISettings.history_type,
         title: "New Conversation",
       })
       .select(`*`)

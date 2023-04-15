@@ -38,6 +38,7 @@ export interface Database {
         Row: {
           advanced_settings: Json | null
           created_at: string | null
+          history_type: string | null
           id: string
           model: string | null
           owner: string | null
@@ -47,6 +48,7 @@ export interface Database {
         Insert: {
           advanced_settings?: Json | null
           created_at?: string | null
+          history_type?: string | null
           id?: string
           model?: string | null
           owner?: string | null
@@ -56,6 +58,7 @@ export interface Database {
         Update: {
           advanced_settings?: Json | null
           created_at?: string | null
+          history_type?: string | null
           id?: string
           model?: string | null
           owner?: string | null
@@ -135,22 +138,6 @@ export interface Database {
               query_embedding: string
               similarity_threshold: number
               match_count: number
-            }
-            Returns: {
-              id: string
-              content: string
-              role: string
-              created_at: string
-              token_size: number
-              similarity: number
-            }[]
-          }
-        | {
-            Args: {
-              query_embedding: string
-              similarity_threshold: number
-              match_count: number
-              chat_id?: string
             }
             Returns: {
               id: string

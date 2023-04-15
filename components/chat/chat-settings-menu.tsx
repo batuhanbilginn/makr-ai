@@ -2,7 +2,6 @@
 import {
   currentChatAtom,
   defaultSystemPropmt,
-  historyTypeAtom,
   tokenCountAtom,
 } from "@/atoms/chat";
 import { useSupabase } from "@/lib/supabase/supabase-provider";
@@ -32,7 +31,6 @@ const ChatSettingsMenu = () => {
   const { supabase } = useSupabase();
   const [currentChat, setCurrentChat] = useAtom(currentChatAtom);
   const tokenCounts = useAtomValue(tokenCountAtom);
-  const [historyType, setHistoryType] = useAtom(historyTypeAtom);
 
   // Send system prompt to supabase
   const sendSupabase = useCallback(
@@ -86,7 +84,7 @@ const ChatSettingsMenu = () => {
           </div>
           <div className="px-2 py-1 bg-white rounded-md shadow-sm dark:bg-neutral-900">
             <span className=" text-neutral-400">History Type: </span>
-            {titleCase(historyType)}
+            {titleCase(currentChat?.history_type as string)}
           </div>
         </DialogTrigger>
         <DialogContent>
@@ -131,10 +129,19 @@ const ChatSettingsMenu = () => {
             <div className="mt-6">
               <Label>History Type</Label>
               <Select
-                onValueChange={(value: "global" | "chat") => {
-                  setHistoryType(value);
+                onValueChange={async (value: "global" | "chat") => {
+                  setCurrentChat((prev) =>
+                    prev ? { ...prev, history_type: value } : prev
+                  );
+                  // Save to supabase
+                  await supabase
+                    .from("chats")
+                    .update({
+                      history_type: value,
+                    })
+                    .eq("id", currentChat?.id);
                 }}
-                value={historyType}
+                value={currentChat?.history_type}
               >
                 <SelectTrigger className="w-full mt-3">
                   <SelectValue placeholder="Select a model." />

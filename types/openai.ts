@@ -30,6 +30,7 @@ export interface OpenAIStreamPayload {
 
 export interface OpenAISettings {
   model: "gpt-3.5-turbo" | "gpt-4";
+  history_type: "chat" | "global";
   system_prompt: string;
   advanced_settings: {
     temperature: number;
