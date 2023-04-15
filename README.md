@@ -22,7 +22,7 @@ I'll be building new features over time. If you have any suggestions, feel free 
 
 **Vercel**
 
-Host your own live version of Chatbot UI with Vercel.
+Host your own live version of makr.AI with Vercel.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/batuhanbilginn/makr-ai)
 
