@@ -59,7 +59,7 @@ yarn install
 
 **4. Create Your Enviroment Variables**
 
-Create your .env.local file in the root of the repo with your OpenAI API Key, Supabase URL and Supabase Anon Key:
+Create your .env.local file in the root of the repo with your Supabase URL and Supabase Anon Key:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=YOUR_URL
