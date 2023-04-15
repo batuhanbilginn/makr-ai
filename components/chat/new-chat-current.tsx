@@ -101,6 +101,32 @@ const NewChatCurrent = () => {
             </div>
           )}
           <div className="mt-6">
+            <Label>History Type</Label>
+            <Select
+              onValueChange={async (value: "global" | "chat") => {
+                setCurrentChat((prev) =>
+                  prev ? { ...prev, history_type: value } : prev
+                );
+                // Save to supabase
+                await supabase
+                  .from("chats")
+                  .update({
+                    history_type: currentChat?.model,
+                  })
+                  .eq("id", currentChat?.id);
+              }}
+              value={currentChat?.history_type}
+            >
+              <SelectTrigger className="w-full mt-3">
+                <SelectValue placeholder="Select a model." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={"global"}>Global</SelectItem>
+                <SelectItem value={"chat"}>Chat</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="mt-6">
             <div className="flex items-center justify-between w-full">
               <Label>System Propmt</Label>
               <button

@@ -44,6 +44,7 @@ export const openAPIKeyHandlerAtom = atom(
 // To control OpenAI Settings when starting new chat (New Chat Component)
 export const openAISettingsAtom = atom<OpenAISettings>({
   model: "gpt-3.5-turbo",
+  history_type: "chat",
   system_prompt: defaultSystemPropmt,
   advanced_settings: {
     temperature: 0.7,
@@ -144,7 +145,10 @@ export const tokenCountAtom = atom((get) => {
 export const tokenSizeLimitAtom = atom(
   (get) => get(tokenCountAtom).currentChatToken >= 4000
 );
-export const historyTypeAtom = atom<"global" | "chat">("global");
+// Read Only atom for getting history type state
+export const historyTypeAtom = atom<"global" | "chat">(
+  (get) => get(currentChatAtom)?.history_type ?? "chat"
+);
 const vectorMessageHistoryAtom = atom<MessageT[]>([]);
 
 // Abort Controller for OpenAI Stream

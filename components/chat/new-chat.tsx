@@ -19,9 +19,14 @@ const focusedSystemPropmtAtom = focusAtom(openAISettingsAtom, (optic) =>
   optic.prop("system_prompt")
 );
 
+const focusedHistoryTypeAtom = focusAtom(openAISettingsAtom, (optic) =>
+  optic.prop("history_type")
+);
+
 const NewChat = () => {
   const [model, setModel] = useAtom(focusedModelAtom);
   const [systemPropmt, setSystemPropmt] = useAtom(focusedSystemPropmtAtom);
+  const [historyType, setHistoryType] = useAtom(focusedHistoryTypeAtom);
 
   return (
     <div className="flex items-start justify-center flex-1 w-full h-full sm:items-center">
@@ -61,6 +66,23 @@ const NewChat = () => {
               </div>
             </div>
           )}
+          <div className="mt-6">
+            <Label>History Type</Label>
+            <Select
+              onValueChange={(value: "global" | "chat") => {
+                setHistoryType(value);
+              }}
+              value={historyType}
+            >
+              <SelectTrigger className="w-full mt-3">
+                <SelectValue placeholder="Select a model." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={"global"}>Global</SelectItem>
+                <SelectItem value={"chat"}>Chat</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="mt-6">
             <Label>System Propmt</Label>
             <TextareaDefault
