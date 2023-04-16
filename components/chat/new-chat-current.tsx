@@ -111,7 +111,7 @@ const NewChatCurrent = () => {
                 await supabase
                   .from("chats")
                   .update({
-                    history_type: currentChat?.model,
+                    history_type: currentChat?.history_type,
                   })
                   .eq("id", currentChat?.id);
               }}
@@ -121,8 +121,8 @@ const NewChatCurrent = () => {
                 <SelectValue placeholder="Select a model." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={"global"}>Global</SelectItem>
-                <SelectItem value={"chat"}>Chat</SelectItem>
+                <SelectItem value="global">Global</SelectItem>
+                <SelectItem value="chat">Chat</SelectItem>
               </SelectContent>
             </Select>
           </div>

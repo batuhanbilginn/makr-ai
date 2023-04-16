@@ -41,6 +41,14 @@ const useChats = () => {
 
   // Add New Chat Handler
   const addChatHandler = async () => {
+    console.log({
+      owner: user?.id,
+      model: openAISettings.model,
+      system_prompt: openAISettings.system_prompt,
+      advanced_settings: JSON.stringify(openAISettings.advanced_settings),
+      history_type: openAISettings.history_type,
+      title: "New Conversation",
+    });
     const { data: newChat, error } = await supabase
       .from("chats")
       .insert({

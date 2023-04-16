@@ -1,6 +1,6 @@
 import Chatbox from "@/components/chat/chatbox";
 import { createClient } from "@/lib/supabase/supabase-server";
-import { ChatWithMessageCountAndSettings } from "@/types/collections";
+import { ChatWithMessageCountAndSettings, MessageT } from "@/types/collections";
 import { notFound } from "next/navigation";
 export const revalidate = 0;
 
@@ -19,7 +19,8 @@ const ChatPage = async ({
     .select("*")
     .eq("chat", id)
     .order("created_at", { ascending: true })
-    .order("role", { ascending: false });
+    .order("role", { ascending: false })
+    .returns<MessageT[]>();
 
   // Check if the chat exists, if not, return 404
   const { data: currentChat } = await supabase

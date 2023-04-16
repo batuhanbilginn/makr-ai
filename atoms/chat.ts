@@ -60,21 +60,51 @@ export const openAISettingsAtom = atom<OpenAISettings>({
 // To combine all settings and messages in a state for sending new message (Read Only)
 const openAIPayload = atom<OpenAIStreamPayload>((get) => {
   const currentChat = get(currentChatAtom);
+  let history;
+  const tokenSizeLimitState = get(tokenSizeLimitAtom);
   // Check if global history is enabled
-  const isGlobal = get(historyTypeAtom) === "global" || get(tokenSizeLimitAtom);
+  const isContextNeeded =
+    get(historyTypeAtom) === "global" || tokenSizeLimitState.isBeyondLimit;
   // Remove the empty assitant message before sending
   const removedEmptyAsistantMessage = [...get(messagesAtom)].filter(
     (message) => message.content !== ""
   );
+  if (isContextNeeded) {
+    // Get the context based on search
+    const context = get(previousContextAtom);
 
-  const history = !isGlobal
-    ? removedEmptyAsistantMessage
-    : [...removedEmptyAsistantMessage].pop() !== null
-    ? [
-        ...get(vectorMessageHistoryAtom),
-        [...removedEmptyAsistantMessage].pop() as MessageT,
-      ]
-    : get(vectorMessageHistoryAtom);
+    // Get old messages based based on remaining token size
+    let remainingTokenSizeForOldMessages =
+      tokenSizeLimitState.remainingToken + get(tokenCountAtom).currentChatToken;
+    for (let i = removedEmptyAsistantMessage.length - 1; i >= 0; i--) {
+      const message = removedEmptyAsistantMessage[i];
+      const messageTokenSize = encode(message.content as string).length;
+      if (messageTokenSize > remainingTokenSizeForOldMessages) {
+        removedEmptyAsistantMessage.splice(i, 1);
+      } else {
+        remainingTokenSizeForOldMessages -= messageTokenSize;
+      }
+    }
+
+    history = removedEmptyAsistantMessage.map((message, index, array) => {
+      // Put Context in the last user's message
+      if (index === array.length - 1) {
+        return {
+          content: `${
+            message.content
+          }\n\n Previous Conversations:${JSON.stringify(context)}`,
+          role: message.role,
+        };
+      } else {
+        return message;
+      }
+    });
+    console.log(history);
+  }
+  // No context Needed
+  else {
+    history = removedEmptyAsistantMessage;
+  }
 
   return {
     apiKey: get(openAIAPIKeyAtom),
@@ -83,7 +113,7 @@ const openAIPayload = atom<OpenAIStreamPayload>((get) => {
       {
         content:
           currentChat?.system_prompt!! +
-          `Answer as concisely as possible and ALWAYS answer in MARKDOWN. Current date: ${new Date()}`,
+          `Answer as concisely as possible and ALWAYS answer in MARKDOWN. Answer based on previous conversations if provided and if it's relevant. Current date: ${new Date()}`,
         role: "system",
       },
       ...history.map(
@@ -142,14 +172,32 @@ export const tokenCountAtom = atom((get) => {
   };
 });
 
-export const tokenSizeLimitAtom = atom(
-  (get) => get(tokenCountAtom).currentChatToken >= 4000
-);
+export const tokenSizeLimitAtom = atom((get) => {
+  const limit = 4000; // TODO: Change this based on the model.
+  const responseLimit =
+    get(currentChatAtom)?.advanced_settings?.max_tokens ?? 1000;
+  const systemPropmtTokenSize =
+    encode(get(currentChatAtom)?.system_prompt ?? "").length + 90; // 90 is for static text we provided for the sake of this app.
+  const buffer = 500; // Buffer TODO: Find a proper solution
+  // Calcula the context token size
+  const contextTokenSize = encode(
+    JSON.stringify(get(previousContextAtom))
+  ).length;
+  const total =
+    limit - systemPropmtTokenSize - buffer - responseLimit - contextTokenSize;
+
+  return {
+    remainingToken: total - get(tokenCountAtom).currentChatToken,
+    isBeyondLimit: total <= get(tokenCountAtom).currentChatToken,
+  };
+});
 // Read Only atom for getting history type state
 export const historyTypeAtom = atom<"global" | "chat">(
   (get) => get(currentChatAtom)?.history_type ?? "chat"
 );
-const vectorMessageHistoryAtom = atom<MessageT[]>([]);
+
+// To hold context that we get from similarity search
+const previousContextAtom = atom<MessageT[]>([]);
 
 // Abort Controller for OpenAI Stream
 const abortControllerAtom = atom<AbortController>(new AbortController());
@@ -189,9 +237,7 @@ export const addMessageAtom = atom(
       id: uuidv4(),
       created_at: String(new Date()),
       owner: "",
-      embedding: "",
       token_size,
-      pair: "",
     };
 
     // Add to Supabase Handler
@@ -269,10 +315,7 @@ export const addMessageAtom = atom(
           role: "assistant",
           created_at: String(new Date()),
           chat: chatID!!,
-          owner: "",
-          embedding: "",
           token_size: 0,
-          pair: "",
         },
       ];
     });
@@ -281,7 +324,7 @@ export const addMessageAtom = atom(
     scrollDown();
 
     // Check If Token Size is over 4000
-    const tokenSizeLimitExceeded = get(tokenSizeLimitAtom);
+    const tokenSizeLimitExceeded = get(tokenSizeLimitAtom).isBeyondLimit;
 
     if (tokenSizeLimitExceeded || get(historyTypeAtom) === "global") {
       // Get User's Message
@@ -291,6 +334,7 @@ export const addMessageAtom = atom(
           : (get(messagesAtom).findLast(
               (message) => message.role === "user"
             ) as MessageT);
+
       // Get Embeddings for the User's Message
       const embeddingResponse = await fetch("/api/openai/embedding", {
         method: "POST",
@@ -309,17 +353,18 @@ export const addMessageAtom = atom(
         },
         body: JSON.stringify({
           query_embedding: embeddings[0].embedding,
-          chat_id: get(historyTypeAtom) === "global" ? null : chatID,
-          match_count: 20,
-          similarity_threshold: 0.6,
+          similarity_threshold: 0.78,
+          match_count: 3,
           owner_id: get(ownerIDAtom),
+          chat_id: get(historyTypeAtom) === "global" ? null : chatID,
         }),
       });
       const history = await response.json();
 
       if (history) {
+        console.log(history);
         // Set the state
-        set(vectorMessageHistoryAtom, history);
+        set(previousContextAtom, history);
       }
     }
 
@@ -337,12 +382,14 @@ export const addMessageAtom = atom(
       });
 
       if (!response.ok) {
+        console.log("Response not ok", response);
         throw new Error(response.statusText);
       }
 
       // This data is a ReadableStream
       const data = response.body;
       if (!data) {
+        console.log("No data from response.", data);
         throw new Error("No data from response.");
       }
 
@@ -351,6 +398,7 @@ export const addMessageAtom = atom(
       let done = false;
 
       while (!done) {
+        console.log("Reading...");
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         const chunkValue = decoder.decode(value);
@@ -421,6 +469,25 @@ export const addMessageAtom = atom(
                 return m;
               });
             });
+            // Set PairID to the User's Message
+            if (finalAIMessage) {
+              try {
+                await fetch("/api/supabase/pair", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    messageID: message.id,
+                    pairID: instertedMessages.find(
+                      (message: MessageT) => message.role === "assistant"
+                    )?.id,
+                  }),
+                });
+              } catch (error) {
+                console.log(error);
+              }
+            }
           } else {
             set(messagesAtom, (prev) => {
               return prev.map((m) => {
