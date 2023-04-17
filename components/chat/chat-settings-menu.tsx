@@ -3,6 +3,7 @@ import {
   currentChatAtom,
   defaultSystemPropmt,
   tokenCountAtom,
+  tokenSizeLimitAtom,
 } from "@/atoms/chat";
 import { useSupabase } from "@/lib/supabase/supabase-provider";
 import { useAtom, useAtomValue } from "jotai";
@@ -31,6 +32,7 @@ const ChatSettingsMenu = () => {
   const { supabase } = useSupabase();
   const [currentChat, setCurrentChat] = useAtom(currentChatAtom);
   const tokenCounts = useAtomValue(tokenCountAtom);
+  const tokenSizeLimitExceeded = useAtomValue(tokenSizeLimitAtom).isBeyondLimit;
 
   // Send system prompt to supabase
   const sendSupabase = useCallback(
@@ -78,8 +80,13 @@ const ChatSettingsMenu = () => {
               ? "Default"
               : "Custom"}
           </div>
-          <div className="px-2 py-1 bg-white rounded-md shadow-sm dark:bg-neutral-900">
+          <div className="flex items-center px-2 py-1 bg-white rounded-md shadow-sm dark:bg-neutral-900">
             <span className=" text-neutral-400">Token Size: </span>
+            <div
+              className={`w-2 h-2 mx-1 rounded-full ${
+                tokenSizeLimitExceeded ? "bg-red-400" : "bg-emerald-400"
+              }`}
+            />
             {dottedNumber(tokenCounts.currentChatToken)}
           </div>
           <div className="px-2 py-1 bg-white rounded-md shadow-sm dark:bg-neutral-900">

@@ -73,6 +73,7 @@ export interface Database {
           created_at: string | null
           embedding: string | null
           id: string
+          index: number
           owner: string | null
           pair: string | null
           role: string | null
@@ -84,6 +85,7 @@ export interface Database {
           created_at?: string | null
           embedding?: string | null
           id?: string
+          index?: number
           owner?: string | null
           pair?: string | null
           role?: string | null
@@ -95,6 +97,7 @@ export interface Database {
           created_at?: string | null
           embedding?: string | null
           id?: string
+          index?: number
           owner?: string | null
           pair?: string | null
           role?: string | null
@@ -132,39 +135,23 @@ export interface Database {
         }
         Returns: unknown
       }
-      search_messages:
-        | {
-            Args: {
-              query_embedding: string
-              similarity_threshold: number
-              match_count: number
-            }
-            Returns: {
-              id: string
-              content: string
-              role: string
-              created_at: string
-              token_size: number
-              similarity: number
-            }[]
-          }
-        | {
-            Args: {
-              query_embedding: string
-              similarity_threshold: number
-              match_count: number
-              owner_id: string
-              chat_id?: string
-            }
-            Returns: {
-              id: string
-              content: string
-              role: string
-              created_at: string
-              token_size: number
-              similarity: number
-            }[]
-          }
+      search_messages: {
+        Args: {
+          query_embedding: string
+          similarity_threshold: number
+          match_count: number
+          owner_id: string
+          chat_id?: string
+        }
+        Returns: {
+          id: string
+          content: string
+          role: string
+          created_at: string
+          token_size: number
+          index: number
+        }[]
+      }
       vector_avg: {
         Args: {
           "": number[]

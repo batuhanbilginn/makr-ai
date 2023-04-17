@@ -44,8 +44,8 @@ const NewChat = () => {
         <div className="mt-6">
           <Label>Model</Label>
           <Select
-            onValueChange={(value) =>
-              setModel(value as "gpt-3.5-turbo" | "gpt-4")
+            onValueChange={(value: "gpt-3.5-turbo" | "gpt-4") =>
+              setModel(value)
             }
           >
             <SelectTrigger className="w-full mt-3">
@@ -78,8 +78,8 @@ const NewChat = () => {
                 <SelectValue placeholder="Select a model." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={"global"}>Global</SelectItem>
-                <SelectItem value={"chat"}>Chat</SelectItem>
+                <SelectItem value="global">Global</SelectItem>
+                <SelectItem value="chat">Chat</SelectItem>
               </SelectContent>
             </Select>
           </div>

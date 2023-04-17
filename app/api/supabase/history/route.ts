@@ -46,7 +46,6 @@ export async function POST(req: Request): Promise<Response> {
       return NextResponse.json(error, { status: 400 });
     }
 
-    console.log({ history: data });
     return NextResponse.json(data);
   } catch (error) {
     console.log(error);
