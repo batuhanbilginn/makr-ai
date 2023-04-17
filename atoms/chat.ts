@@ -60,50 +60,47 @@ export const openAISettingsAtom = atom<OpenAISettings>({
 // To combine all settings and messages in a state for sending new message (Read Only)
 const openAIPayload = atom<OpenAIStreamPayload>((get) => {
   const currentChat = get(currentChatAtom);
-  let history;
   const tokenSizeLimitState = get(tokenSizeLimitAtom);
   // Check if global history is enabled
   const isContextNeeded =
     get(historyTypeAtom) === "global" || tokenSizeLimitState.isBeyondLimit;
-  // Remove the empty assitant message before sending
-  const removedEmptyAsistantMessage = [...get(messagesAtom)].filter(
+  // Remove the empty assitant message before sending (There is a empty emssage that we push to state for UX purpose)
+  const messages = [...get(messagesAtom)].filter(
     (message) => message.content !== ""
   );
+  let history = messages;
+
+  // CONTEXT IS NEEDED
   if (isContextNeeded) {
     // Get the context based on search
     const context = get(previousContextAtom);
+    // Remaining Token for Current Chat History
+    let remainingTokenSizeForCurrentChat =
+      tokenSizeLimitState.remainingTokenForCurerntChat;
 
-    // Get old messages based based on remaining token size
-    let remainingTokenSizeForOldMessages =
-      tokenSizeLimitState.remainingToken + get(tokenCountAtom).currentChatToken;
-    for (let i = removedEmptyAsistantMessage.length - 1; i >= 0; i--) {
-      const message = removedEmptyAsistantMessage[i];
+    // Get old messages of current chat based on remaining token size
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i];
       const messageTokenSize = encode(message.content as string).length;
-      if (messageTokenSize > remainingTokenSizeForOldMessages) {
-        removedEmptyAsistantMessage.splice(i, 1);
+      if (messageTokenSize > remainingTokenSizeForCurrentChat) {
+        messages.splice(i, 1);
       } else {
-        remainingTokenSizeForOldMessages -= messageTokenSize;
+        remainingTokenSizeForCurrentChat -= messageTokenSize;
       }
     }
-
-    history = removedEmptyAsistantMessage.map((message, index, array) => {
+    history = messages.map((message, index, array) => {
       // Put Context in the last user's message
       if (index === array.length - 1) {
         return {
-          content: `${
-            message.content
-          }\n\n Previous Conversations:${JSON.stringify(context)}`,
+          content: `Previous Conversations Context:${JSON.stringify(
+            context
+          )} \n\n ${message.content}`,
           role: message.role,
-        };
+        } as MessageT;
       } else {
         return message;
       }
     });
-    console.log(history);
-  }
-  // No context Needed
-  else {
-    history = removedEmptyAsistantMessage;
   }
 
   return {
@@ -178,7 +175,7 @@ export const tokenSizeLimitAtom = atom((get) => {
     get(currentChatAtom)?.advanced_settings?.max_tokens ?? 1000;
   const systemPropmtTokenSize =
     encode(get(currentChatAtom)?.system_prompt ?? "").length + 90; // 90 is for static text we provided for the sake of this app.
-  const buffer = 500; // Buffer TODO: Find a proper solution
+  const buffer = 250; // Buffer TODO: Find a proper solution
   // Calcula the context token size
   const contextTokenSize = encode(
     JSON.stringify(get(previousContextAtom))
@@ -188,6 +185,7 @@ export const tokenSizeLimitAtom = atom((get) => {
 
   return {
     remainingToken: total - get(tokenCountAtom).currentChatToken,
+    remainingTokenForCurerntChat: total,
     isBeyondLimit: total <= get(tokenCountAtom).currentChatToken,
   };
 });
@@ -335,16 +333,23 @@ export const addMessageAtom = atom(
               (message) => message.role === "user"
             ) as MessageT);
 
-      // Get Embeddings for the User's Message
-      const embeddingResponse = await fetch("/api/openai/embedding", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ messages: [lastUsersMessage], apiKey }),
-      });
+      let embedding = lastUsersMessage.embedding;
 
-      const embeddings = await embeddingResponse.json();
+      // If we don't have embedding for the message, get it from OpenAI (When we regenerate, we already have embedding)
+      if (!embedding) {
+        // Get Embeddings for the User's Message
+        const embeddingResponse = await fetch("/api/openai/embedding", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ messages: [lastUsersMessage], apiKey }),
+        });
+
+        const embeddings = await embeddingResponse.json();
+        embedding = embeddings[0].embedding;
+      }
+
       // Get history from Supabase
       const response = await fetch("/api/supabase/history", {
         method: "POST",
@@ -352,9 +357,9 @@ export const addMessageAtom = atom(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          query_embedding: embeddings[0].embedding,
-          similarity_threshold: 0.78,
-          match_count: 3,
+          query_embedding: embedding,
+          similarity_threshold: 0.79,
+          match_count: 10,
           owner_id: get(ownerIDAtom),
           chat_id: get(historyTypeAtom) === "global" ? null : chatID,
         }),
@@ -362,9 +367,11 @@ export const addMessageAtom = atom(
       const history = await response.json();
 
       if (history) {
-        console.log(history);
         // Set the state
-        set(previousContextAtom, history);
+        set(
+          previousContextAtom,
+          history.sort((a: any, b: any) => a.index - b.index)
+        );
       }
     }
 
@@ -398,7 +405,6 @@ export const addMessageAtom = atom(
       let done = false;
 
       while (!done) {
-        console.log("Reading...");
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         const chunkValue = decoder.decode(value);
@@ -453,12 +459,9 @@ export const addMessageAtom = atom(
           apiKey
         );
 
-        let lastUserMessageID = "";
-
         for (const message of instertedMessages) {
           if (message.role === "user") {
             set(messagesAtom, (prev) => {
-              lastUserMessageID = message.id;
               return prev.map((m) => {
                 if (m.id === userMessage.id) {
                   return {
@@ -469,25 +472,6 @@ export const addMessageAtom = atom(
                 return m;
               });
             });
-            // Set PairID to the User's Message
-            if (finalAIMessage) {
-              try {
-                await fetch("/api/supabase/pair", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    messageID: message.id,
-                    pairID: instertedMessages.find(
-                      (message: MessageT) => message.role === "assistant"
-                    )?.id,
-                  }),
-                });
-              } catch (error) {
-                console.log(error);
-              }
-            }
           } else {
             set(messagesAtom, (prev) => {
               return prev.map((m) => {
@@ -500,31 +484,13 @@ export const addMessageAtom = atom(
                 return m;
               });
             });
-
-            // Set PairID to the Assistant Message
-            if (lastUserMessageID) {
-              try {
-                await fetch("/api/supabase/pair", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    messageID: message.id,
-                    pairID: lastUserMessageID,
-                  }),
-                });
-              } catch (error) {
-                console.log(error);
-              }
-            }
           }
         }
       }
       // Regenerate
       else {
         const instertedMessages = await addMessagetoSupabase(
-          [finalAIMessage!],
+          [finalAIMessage],
           apiKey
         );
         // Change the dummy IDs with the real ones
@@ -532,10 +498,7 @@ export const addMessageAtom = atom(
           console.log("No inserted messages found");
           return;
         }
-        // Get last user's message ID
-        const lastUserMessageID = get(messagesAtom).findLast(
-          (message) => message.role === "user"
-        )?.id;
+
         set(messagesAtom, (prev) => {
           return prev.map((m) => {
             if (m.id === initialID) {
@@ -547,24 +510,6 @@ export const addMessageAtom = atom(
             return m;
           });
         });
-
-        // Set PairID to the Assistant Message
-        if (lastUserMessageID) {
-          try {
-            await fetch("/api/supabase/pair", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                messageID: instertedMessages[0].id,
-                pairID: lastUserMessageID,
-              }),
-            });
-          } catch (error) {
-            console.log(error);
-          }
-        }
       }
     }
 

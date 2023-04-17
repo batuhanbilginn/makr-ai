@@ -38,6 +38,7 @@ export async function POST(req: Request): Promise<Response> {
     .select("id,role,content");
 
   if (error) {
+    console.log(error);
     return new Response(error.message, { status: 400 });
   } else {
     return NextResponse.json(messagesInserted);
