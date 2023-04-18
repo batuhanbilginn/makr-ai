@@ -321,7 +321,7 @@ export const addMessageAtom = atom(
     // Scroll down after insert
     scrollDown();
 
-    // Check If Token Size is over 4000
+    // Check If Token Size is Exceeded
     const tokenSizeLimitExceeded = get(tokenSizeLimitAtom).isBeyondLimit;
 
     if (tokenSizeLimitExceeded || get(historyTypeAtom) === "global") {

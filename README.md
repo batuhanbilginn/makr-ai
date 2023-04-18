@@ -37,13 +37,14 @@ You must create 3 tables in your supabase project:
 
 ![makr.AI](./public/supbase_schema.png)
 
-As you can see in messages table, there is column called `embedding`. This column is used for storing the vector representation of the message. You can create this column via dashboard or via SQL query. Before creating this column, you must enable the `pg_vector` extension.
+You can create all the tables you need with the `sql function` that I cretead in the `sql` folder of the repo. You can use the `create-tables.sql` file in the `sql` folder of the repo to create the tables. Remember that you must enable the `pg_vector` extension before creating the tables.
 
 After you create the embedding column, you should create an `index` based on this column. You can use the `create-index.sql` file in the `sql` folder of the repo to create the index.
 
 Finally, you must create a sql function called `search-messages` in your Supabase project. You can use the `search-messages.sql` file in the `sql` folder of the repo to create the function.
 
-In order to learn more about this you can check this [tutorial](https://youtu.be/yrXLvCB0ByA).
+Project Setup [tutorial](https://youtu.be/yrXLvCB0ByA).
+Longterm Memory for ChatGPT [tutorial](https://youtu.be/trReGNOh2oM).
 
 **2. Clone The Repo**
 
