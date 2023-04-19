@@ -39,7 +39,7 @@ You must create 3 tables in your supabase project:
 
 You can create all the tables you need with the `sql function` that I cretead in the `sql` folder of the repo. You can use the `create-tables.sql` file in the `sql` folder of the repo to create the tables. Remember that you must enable the `pg_vector` extension before creating the tables.
 
-You can use `create-index.sql` to automatically create user profiles on sign up.
+You can use `create-profile.sql` to automatically create user profiles on sign up.
 
 After you create the embedding column, you should create an `index` based on this column. You can use the `create-index.sql` file in the `sql` folder of the repo to create the index.
 
