@@ -4,7 +4,7 @@ import { ownerIDAtom } from "@/atoms/chat";
 import { ProfileT } from "@/types/collections";
 import { Session } from "@supabase/supabase-js";
 import { useSetAtom } from "jotai";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect } from "react";
 import useSWR from "swr";
 import { useSupabase } from "./supabase-provider";
@@ -34,7 +34,6 @@ export default function SupabaseAuthProvider({
 }) {
   const { supabase } = useSupabase();
   const router = useRouter();
-  const pathName = usePathname()
   const setOwnerID = useSetAtom(ownerIDAtom);
 
   // Get USER
