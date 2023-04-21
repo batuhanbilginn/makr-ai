@@ -4,7 +4,7 @@ import { ownerIDAtom } from "@/atoms/chat";
 import { ProfileT } from "@/types/collections";
 import { Session } from "@supabase/supabase-js";
 import { useSetAtom } from "jotai";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect } from "react";
 import useSWR from "swr";
 import { useSupabase } from "./supabase-provider";
@@ -34,6 +34,7 @@ export default function SupabaseAuthProvider({
 }) {
   const { supabase } = useSupabase();
   const router = useRouter();
+  const pathName = usePathname()
   const setOwnerID = useSetAtom(ownerIDAtom);
 
   // Get USER
@@ -71,6 +72,7 @@ export default function SupabaseAuthProvider({
       provider: "github",
       options: {
         redirectTo:
+        process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL ??
           process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
             ? "https://ai.makr.dev/chat"
             : process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
@@ -79,6 +81,7 @@ export default function SupabaseAuthProvider({
       },
     });
   };
+  
 
   // Set Owner ID
   useEffect(() => {

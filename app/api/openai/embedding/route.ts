@@ -9,7 +9,7 @@ export async function POST(req: Request): Promise<Response> {
     return new Response("No messages!", { status: 400 });
   }
 
-  if (!apiKey) {
+  if (!process.env.OPENAI_API_KEY || !apiKey) {
     return new Response("No key!", { status: 400 });
   }
 
@@ -25,7 +25,7 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   // Create OpenAI Client
-  const openaiClient = openai(apiKey);
+  const openaiClient = openai(process.env.OPENAI_API_KEY || apiKey);
 
   try {
     // Create Embeddings
