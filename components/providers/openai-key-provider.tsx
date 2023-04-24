@@ -1,15 +1,23 @@
 "use client";
 
-import { openAPIKeyHandlerAtom } from "@/atoms/chat";
+import { openAIAPIKeyAtom, openAPIKeyHandlerAtom } from "@/atoms/chat";
 import { useAuth } from "@/lib/supabase/supabase-auth-provider";
 import { useAtom } from "jotai";
+import { useHydrateAtoms } from "jotai/utils";
 import { Key } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 
-const OpenAIKeyProvider = ({ children }: { children: React.ReactNode }) => {
+const OpenAIKeyProvider = ({
+  children,
+  serverKey,
+}: {
+  children: React.ReactNode;
+  serverKey?: string;
+}) => {
+  useHydrateAtoms([[openAIAPIKeyAtom, serverKey] as const]);
   const [openAIKey, keyHandler] = useAtom(openAPIKeyHandlerAtom);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isHandling, setIsHandling] = useState<boolean>(false);

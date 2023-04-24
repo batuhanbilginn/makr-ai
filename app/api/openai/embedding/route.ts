@@ -9,7 +9,7 @@ export async function POST(req: Request): Promise<Response> {
     return new Response("No messages!", { status: 400 });
   }
 
-  if (!process.env.OPENAI_API_KEY || !apiKey) {
+  if (!apiKey) {
     return new Response("No key!", { status: 400 });
   }
 
@@ -25,7 +25,7 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   // Create OpenAI Client
-  const openaiClient = openai(process.env.OPENAI_API_KEY || apiKey);
+  const openaiClient = openai(apiKey);
 
   try {
     // Create Embeddings
@@ -41,7 +41,7 @@ export async function POST(req: Request): Promise<Response> {
     if (!embeddings) {
       return NextResponse.json(
         { message: "Something went wrong!" },
-        { status: 400 }
+        { status: 500 }
       );
     }
 
@@ -51,7 +51,7 @@ export async function POST(req: Request): Promise<Response> {
     console.log(error);
     return NextResponse.json(
       { message: "Something went wrong!" },
-      { status: 400 }
+      { status: 500 }
     );
   }
 }

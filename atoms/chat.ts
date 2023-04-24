@@ -18,8 +18,8 @@ const modelPrices = {
 };
 export const defaultSystemPropmt = `You are makr.AI, a large language model trained by OpenAI.`;
 
-// To hold OpenAI API Key (Not Exported)
-const openAIAPIKeyAtom = atom<string>("");
+// To hold OpenAI API Key
+export const openAIAPIKeyAtom = atom<string>(process.env.OPENAI_API_KEY || "");
 
 // To control OpenAI API Key (Set and Delete)
 export const openAPIKeyHandlerAtom = atom(
@@ -267,7 +267,6 @@ export const addMessageAtom = atom(
               return {
                 ...m,
                 embedding: embeddings[i].embedding,
-                index: new Date().getTime()
               };
             }),
           }),
@@ -370,10 +369,7 @@ export const addMessageAtom = atom(
 
       if (history) {
         // Set the state
-        set(
-          previousContextAtom,
-          history.sort((a: any, b: any) => a.index - b.index)
-        );
+        set(previousContextAtom, history);
       }
     }
 

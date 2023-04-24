@@ -8,8 +8,7 @@ CREATE OR REPLACE FUNCTION search_messages (
 RETURNS TABLE (
   content text,
   role text,
-  created_at timestamp with time zone,
-  index bigint
+  created_at timestamp with time zone
 )
 LANGUAGE plpgsql
 AS $$
@@ -18,8 +17,7 @@ BEGIN
   SELECT
     messages.content,
     messages.role,
-    messages.created_at::timestamp with time zone,
-    messages.index
+    messages.created_at::timestamp with time zone
   FROM messages
   WHERE
     messages.owner = owner_id AND
@@ -27,7 +25,7 @@ BEGIN
     1 - (messages.embedding <=> query_embedding) > similarity_threshold
   ORDER BY
     1 - (messages.embedding <=> query_embedding) DESC,
-    messages.index DESC
+    messages.created_at
   LIMIT match_count;
 END;
 $$;

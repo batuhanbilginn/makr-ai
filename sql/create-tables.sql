@@ -24,6 +24,6 @@ create table messages (
   chat uuid references chats (id),
   owner uuid references profiles (id),
   embedding public.vector(1536),
-  token_size integer,
-  "index" bigint not null
+  token_size integer
 );
+
