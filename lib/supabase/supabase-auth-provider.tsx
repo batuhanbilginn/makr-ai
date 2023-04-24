@@ -71,6 +71,7 @@ export default function SupabaseAuthProvider({
       provider: "github",
       options: {
         redirectTo:
+        process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL ??
           process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
             ? "https://ai.makr.dev/chat"
             : process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
@@ -79,6 +80,7 @@ export default function SupabaseAuthProvider({
       },
     });
   };
+  
 
   // Set Owner ID
   useEffect(() => {

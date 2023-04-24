@@ -32,6 +32,7 @@ export async function POST(req: Request): Promise<Response> {
           owner: session?.user?.id,
           embedding: message.embedding,
           token_size: message.token_size,
+          index: message.index
         };
       })
     )
