@@ -217,6 +217,7 @@ export const addMessageAtom = atom(
     const token_size = get(tokenCountAtom).currentMessageToken;
     const isHandlig = get(handlingAtom);
     const chatID = get(chatIDAtom);
+    const currentChat = get(currentChatAtom);
     const apiKey = get(openAIAPIKeyAtom);
     // Early Returns
     if (
@@ -266,6 +267,7 @@ export const addMessageAtom = atom(
               return {
                 ...m,
                 embedding: embeddings[i].embedding,
+                index: new Date().getTime()
               };
             }),
           }),
@@ -533,6 +535,7 @@ export const addMessageAtom = atom(
               }),
               chatID: get(chatIDAtom),
               apiKey: get(openAIAPIKeyAtom),
+              model: currentChat?.model ?? "gpt-3.5-turbo",
             }),
           });
           const { title } = await response.json();

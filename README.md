@@ -69,7 +69,17 @@ NEXT_PUBLIC_SUPABASE_URL=YOUR_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_KEY
 ```
 
-**4. Run Development Server**
+**4.1 Configure OPENAI_API_KEY**
+
+ 1. Locate the file named `.env.example` in the main folder.
+ 2. Create a copy of this file, called `.env` by removing the `template` extension.  The easiest way is to do this in a command prompt/terminal window `cp .env.example .env`.
+ 3. Open the `.env` file in a text editor.  _Note: Files starting with a dot might be hidden by your Operating System._
+ 4. Find the line that says `OPENAI_API_KEY=`.
+ 5. After the `"="`, enter your unique OpenAI API Key (without any quotes or spaces).
+ 6. Enter any other API keys or Tokens for services you would like to utilize.
+ 7. Save and close the `.env` file.
+
+**5. Run Development Server**
 
 ```bash
 yarn dev

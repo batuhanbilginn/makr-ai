@@ -4,7 +4,7 @@ import { ChatGPTMessage } from "@/types/openai";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request): Promise<Response> {
-  const { messages, chatID, apiKey } = await req.json();
+  const { messages, chatID, apiKey,model } = await req.json();
 
   if (!messages) {
     return new Response("No messages!", { status: 400 });
@@ -36,7 +36,7 @@ export async function POST(req: Request): Promise<Response> {
 
   // Get Conversation Title
   const response = await openaiClient.createChatCompletion({
-    model: "gpt-4",
+    model: model ?? "gpt-3.5-turbo",
     messages: [
       {
         content:
