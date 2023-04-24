@@ -32,6 +32,15 @@ export default function SupabaseAuthProvider({
   serverSession?: Session | null;
   children: React.ReactNode;
 }) {
+  // THROW ERROR IF AUTH_REDIRECT IS NOT SET
+  if (
+    !process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL &&
+    (process.env.NEXT_PUBLIC_VERCEL_ENV === "production" ||
+      process.env.NEXT_PUBLIC_VERCEL_ENV === "preview")
+  ) {
+    throw new Error("NEXT_PUBLIC_AUTH_REDIRECT_URL must be set in .env");
+  }
+
   const { supabase } = useSupabase();
   const router = useRouter();
   const setOwnerID = useSetAtom(ownerIDAtom);
@@ -71,16 +80,13 @@ export default function SupabaseAuthProvider({
       provider: "github",
       options: {
         redirectTo:
-        process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL ??
-          process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
-            ? "https://ai.makr.dev/chat"
-            : process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
-            ? "https://preview-ai.makr.dev/chat"
+          process.env.NEXT_PUBLIC_VERCEL_ENV === "production" ||
+          process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
+            ? process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL
             : "http://localhost:3000/chat",
       },
     });
   };
-  
 
   // Set Owner ID
   useEffect(() => {

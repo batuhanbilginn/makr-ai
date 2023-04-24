@@ -4,7 +4,7 @@ import { ChatGPTMessage } from "@/types/openai";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request): Promise<Response> {
-  const { messages, chatID, apiKey,model } = await req.json();
+  const { messages, chatID, apiKey, model } = await req.json();
 
   if (!messages) {
     return new Response("No messages!", { status: 400 });
