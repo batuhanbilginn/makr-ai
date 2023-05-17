@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 const LoginForm = () => {
-  const { signInWithGithub, user } = useAuth();
+  const { signInWithGithub,signInWithGoogle, user } = useAuth();
   const router = useRouter();
 
   // Check if there is a user
@@ -39,6 +39,12 @@ const LoginForm = () => {
           className="flex items-center w-full gap-2 mt-6"
         >
           Login with Github <Github size="16" />
+        </Button>
+        <Button
+          onClick={signInWithGoogle}
+          className="flex items-center w-full gap-2 mt-6"
+        >
+          Login with Google <Mail size="16" />
         </Button>
       </div>
     </div>

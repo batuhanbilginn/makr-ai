@@ -8,6 +8,20 @@ import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect } from "react";
 import useSWR from "swr";
 import { useSupabase } from "./supabase-provider";
+import { createClient } from '@supabase/supabase-js';
+
+
+import {
+  Auth,
+} from '@supabase/auth-ui-react';
+
+import {
+  // Import predefined theme
+  ThemeSupa,
+} from '@supabase/auth-ui-shared';
+
+
+
 interface ContextI {
   user: ProfileT | null | undefined;
   error: any;
@@ -15,6 +29,7 @@ interface ContextI {
   mutate: any;
   signOut: () => Promise<void>;
   signInWithGithub: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
 }
 const Context = createContext<ContextI>({
   user: null,
@@ -23,6 +38,7 @@ const Context = createContext<ContextI>({
   mutate: null,
   signOut: async () => {},
   signInWithGithub: async () => {},
+  signInWithGoogle: async () => {},
 });
 
 export default function SupabaseAuthProvider({
@@ -44,6 +60,7 @@ export default function SupabaseAuthProvider({
   const { supabase } = useSupabase();
   const router = useRouter();
   const setOwnerID = useSetAtom(ownerIDAtom);
+  
 
   // Get USER
   const getUser = async () => {
@@ -87,6 +104,19 @@ export default function SupabaseAuthProvider({
       },
     });
   };
+  const signInWithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo:
+          process.env.NEXT_PUBLIC_VERCEL_ENV === "production" ||
+          process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
+            ? process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL
+            : "http://localhost:3000/chat",
+      },
+    });
+  };
+  
 
   // Set Owner ID
   useEffect(() => {
@@ -117,6 +147,7 @@ export default function SupabaseAuthProvider({
     mutate,
     signOut,
     signInWithGithub,
+    signInWithGoogle,
   };
 
   return <Context.Provider value={exposed}>{children}</Context.Provider>;

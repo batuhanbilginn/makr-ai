@@ -10,6 +10,10 @@ import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
+
+import rehypeMathjax from 'rehype-mathjax';
+import remarkMath from 'remark-math';
+
 const Message = ({ message }: { message: MessageT }) => {
   const isAssistant = message.role === "assistant";
   const codeRef = useRef<HTMLElement>(null);
@@ -79,14 +83,15 @@ const Message = ({ message }: { message: MessageT }) => {
                 },
               }}
               rehypePlugins={[rehypeHighlight]}
-              remarkPlugins={[remarkGfm]}
+              remarkPlugins={[remarkGfm, remarkMath]}
+              
             >
               {message.content ?? ""}
             </ReactMarkdown>
           ) : (
             <div className="flex items-center gap-2 px-3 py-1 text-sm rounded-md max-w-fit dark:bg-neutral-950/50 bg-neutral-200">
               <div className="w-2 h-2 bg-indigo-900 rounded-full animate-pulse" />
-              <span>Thinking</span>
+              <span>Thinking...</span>
             </div>
           )}
         </div>
