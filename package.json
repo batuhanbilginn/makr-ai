@@ -40,6 +40,8 @@
     "jotai-optics": "^0.3.0",
     "jotai-utils": "^0.0.0",
     "lodash.debounce": "^4.0.8",
+    "rehype-mathjax": "^4.0.2",
+    "remark-math": "^5.1.1",
     "lucide-react": "^0.129.0",
     "luxon": "^3.3.0",
     "next": "13.3.1-canary.7",
